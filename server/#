@@ -123,10 +123,9 @@ void *client_handler(void *socket_desc)
 
     /* ============================ Switch interface ==================== */
     
-    int choice; 
+    int choice = recieve_menu_option(connfd);
 
-    while (choice != 7) {
-
+    while (choice != 3) {
     switch(choice) {
     case 1 :
       printf("choice 1\n");
@@ -138,18 +137,15 @@ void *client_handler(void *socket_desc)
       break;
     case 3 :
       printf("choice 3\n");
-      send_uts(connfd);
       break;
     case 4 :
       printf("choice 4\n");
-      break;
-    case 7 :
-      printf("choice 7\n");
-      break;
+      send_uts(connfd);
     default:
-      printf("invalid selection\n");
+      printf("invalid choice\n");
       break;
-        }
+      break;
+    }
 
     choice = recieve_menu_option(connfd);
 
@@ -215,12 +211,6 @@ int recieve_menu_option(int socket)
       return 3;
     case '4':
       return 4;
-    case '5':
-      return 5;
-    case '6':
-      return 6;
-    case '7':
-      return 7;
     default :
       return 0;
     }
@@ -294,10 +284,10 @@ void send_uts(int socket)
 
 
 
-    size_t payload_length = sizeof(struct utsname); 
+  size_t payload_length = sizeof(uts);
     
-    writen(socket, (unsigned char *) &payload_length, sizeof(size_t)); 
-    writen(socket, (unsigned char *) &uts, payload_length);
+    writen(socket, (unsigned char *) &payload_length, sizeof(size_t));
+    writen(socket, (unsigned char *) uts, payload_length);
 
 }
 

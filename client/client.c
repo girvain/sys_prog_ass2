@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <arpa/inet.h>
 #include "rdwrn.h"
+#include <sys/utsname.h>
 
 typedef struct {
     int id_number;
@@ -64,52 +65,6 @@ void send_menu_option(int socket, char *hello_string)
     writen(socket, (unsigned char *) hello_string, n);	  
 }
 
-/* void send_menu_option(int socket, char *hello_string) */
-/* { */
-/*   //char hello_string[32];  */
-/*     size_t n = strlen(hello_string) + 1; */
-/*     writen(socket, (unsigned char *) &n, sizeof(size_t));	 */
-/*     writen(socket, (unsigned char *) hello_string, n);	   */
-
-/*     char result[32]; */
-/*     size_t k; */
-
-/*     /\* readn(socket, (unsigned char *) &k, sizeof(size_t));	 *\/ */
-/*     /\* readn(socket, (unsigned char *) result, k); *\/ */
-
-/*     /\* printf("Recieved menu option: %s\n", result); *\/ */
-/*     /\* printf("Received: %zu bytes\n\n", k); *\/ */
-
-/* } */
-
-
-
-/* void send_menu_option(int socket) */
-/* { */
-/*   char hello_string[255]; */
-/*   char recieve_buffer[255]; */
-/*   size_t k; */
-/*  while (hello_string[0] != '3') { */
-
-
-
-/*   //char hello_string[] = "Example of menuy option 4"; */
-/*   //char hello_string[255]; */
-
-/*   displayOptions(); */
-/*   scanf("%s", hello_string); */
-
-/*   size_t n = strlen(hello_string) + 1; */
-/*   writen(socket, (unsigned char *) &n, sizeof(size_t));	 */
-/*   writen(socket, (unsigned char *) hello_string, n);	   */
-
-/*   readn(socket, (unsigned char *) &k, sizeof(size_t));	 */
-/*   readn(socket, (unsigned char *) recieve_buffer, k); */
-
-
-/*  }// end of while  */
-/* } // end get_hello() */
-
 void recieve_welcome_msg(int socket)
 {
     char hello_string[32];
@@ -139,7 +94,6 @@ void send_and_get_ints(int socket)
 } 
 
 
-
 void get_random_numbers()
 {
   char hello_string[32];
@@ -147,9 +101,23 @@ void get_random_numbers()
 
   readn(socket, (unsigned char *) &k, sizeof(size_t));	
   readn(socket, (unsigned char *) hello_string, k);
-
 }
 
+void get_uts(int socket)
+{
+  struct utsname uts;
+  size_t payload_length;
+  size_t n = readn(socket, (unsigned char *) &payload_length, sizeof(size_t));
+  printf("payload_length is: %zu (%zu bytes)\n", payload_length, n);
+  n = readn(socket, (unsigned char *) &uts, payload_length);
+
+  printf("Node name:    %s\n", uts.nodename);
+    printf("System name:  %s\n", uts.sysname);
+    printf("Release:      %s\n", uts.release);
+    printf("Version:      %s\n", uts.version);
+    printf("Machine:      %s\n\n", uts.machine);
+
+}
 
 int main(void)
 {
@@ -179,24 +147,8 @@ int main(void)
     // your own application code will go here and replace what is below... 
     // i.e. your menu etc.
 
-
-    // implement a switch to select which function to send data.
-    /* char user_input[255]; */
-    /* while (user_input[0] != '3') { */
-    /*   displayOptions(); */
-    /*   scanf("%s", user_input); */
-
-    /*   send_menu_option(sockfd, user_input); */
-
-    /*   switch(user_input) { */
-    /*   case '1' : */
-    /*     send_menu_option(sockfd); */
-    /*   } */
-    /*   //printf("Would you like another option[Y/n]\n"); */
-    /* }// end of while */
-
     int user_input;
-    while (user_input != 3) {
+    while (user_input != 7) {
       displayOptions();
       scanf("%i", &user_input);
 
@@ -210,12 +162,19 @@ int main(void)
         break;
       case 2 :
         send_menu_option(sockfd, "2");
-
         send_and_get_ints(sockfd);
         break;
       case 3 :
         send_menu_option(sockfd, "3");
+        get_uts(sockfd);
         break;
+      case 4 :
+        send_menu_option(sockfd, "4");
+        break;
+      case 7 :
+        send_menu_option(sockfd, "7");
+        break;
+
       } 
       //printf("Would you like another option[Y/n]\n");
     }// end of while
