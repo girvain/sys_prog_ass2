@@ -13,12 +13,25 @@
 #include "rdwrn.h"
 #include <sys/utsname.h>
 
+#include <dirent.h>
+#include <sys/stat.h>
+
 // includes for getIp
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <time.h>
+// includes for stat etc
 
 
+
+/* TODO:
+ * 1) error handling
+ * 2) stat 
+ * 3) ip address display
+ * 4) get time
+ * 5) error handling for 
+ * 6) upload file to client on client selection
+ */
 // thread function
 void *client_handler(void *);
 
@@ -36,7 +49,7 @@ int recieve_menu_option(int socket);
 void sendRandArray();
 void get_and_send_ints(int);
 void send_uts();
-
+void send_file_names();
 // you shouldn't need to change main() in the server except the port number
 int main(void)
 {
@@ -142,6 +155,10 @@ void *client_handler(void *socket_desc)
       break;
     case 4 :
       printf("choice 4\n");
+      send_file_names(connfd);
+      break;
+    case 5 :
+      printf("choice 5\n");
       break;
     case 7 :
       printf("choice 7\n");
@@ -291,15 +308,96 @@ void send_uts(int socket)
 
     //exit(EXIT_SUCCESS);
 
-
-
-
     size_t payload_length = sizeof(struct utsname); 
     
     writen(socket, (unsigned char *) &payload_length, sizeof(size_t)); 
     writen(socket, (unsigned char *) &uts, payload_length);
-
 }
+
+void send_file_names(int socket)
+{
+    //stat stuff
+    /* struct stat *buffer;  */
+    /* buffer = malloc(sizeof(struct stat)); */
+    /* int status; */
+    /* // scandir stuff */
+    /* struct dirent **namelist; */
+    /* int n; */
+
+    /* // string to concat filenames with */
+    /* int char_count = 0;// this is to hold the length of how long the filelist[] will be */
+    /* int current_file = scandir("./upload", &namelist, NULL, alphasort); */
+    /* while (current_file--) { */
+    /*   // get the lenght of the string */
+    /*   int str_length = strlen(namelist[current_file]->d_name); */
+    /*   //printf("%d\n", str_length); */
+    /*   char_count += (str_length + 1); // plus 1 for each \n ?????? */
+    /* } */
+    /* printf("char count %d\n", char_count); */
+    /* // This holds the total length of the char array of file names */
+    /* char filelist[char_count]; */
+
+    /* n = scandir("./upload", &namelist, NULL, alphasort); */
+    /* if (n < 0) */
+    /*     perror("scandir"); */
+    /* else { */
+
+    /*   while (n--) { */
+    /*     printf("%s", namelist[n]->d_name); // print the name of the file */
+    /*     strcat(filelist, namelist[n]->d_name); */
+    /*     strcat(filelist, "\n"); */
+    /*     // use stat to add bytes, maybe add more info later */
+    /*     stat(namelist[n]->d_name, buffer); */
+    /*     int size = buffer->st_size; */
+    /*     printf(" %d bytes\n", size); */
+    /*     free(namelist[n]); */
+    /*   } */
+    /*   free(namelist); */
+
+    /* } */
+    /* printf("%s", filelist); */
+
+
+
+  
+    struct dirent **namelist;
+    int status;
+    int n;
+
+    // string to concat filenames with
+    int char_count = 0;// this is to hold the length of how long the filelist[] will be
+    int current_file = scandir("./upload", &namelist, NULL, alphasort);
+    // counts the length of the filelist string
+    while (current_file--) {
+      // get the lenght of the string
+      int str_length = strlen(namelist[current_file]->d_name);
+      //printf("%d\n", str_length);
+      char_count += (str_length + 1); // plus 1 for each \n ??????
+    }
+    //printf("char count %d\n", char_count);
+
+    // This holds the total length of the char array of file names
+    char filelist[char_count];
+
+    n = scandir("upload", &namelist, NULL, alphasort);
+    if (n < 0)
+        perror("scandir");
+    else {
+      while (n--) {
+        //printf("\n%s", namelist[n]->d_name); // print the name of the file
+        strcat(filelist, namelist[n]->d_name);
+        strcat(filelist, "\n");
+        free(namelist[n]);
+      }
+      free(namelist);
+    }
+    printf("%s", filelist);
+
+    // send the string
+    size_t string = strlen(filelist) + 1;
+    writen(socket, (unsigned char *) &string, sizeof(size_t));	
+    writen(socket, (unsigned char *) filelist, string);	  
+} // end of send_file_names()
 
 
 int getIp()

@@ -119,6 +119,20 @@ void get_uts(int socket)
 
 }
 
+void get_filenames(int socket)
+{
+    char hello_string[255];
+    size_t k;
+
+    readn(socket, (unsigned char *) &k, sizeof(size_t));	
+    readn(socket, (unsigned char *) hello_string, k);
+
+    printf("filenames in upload directory:\n%s", hello_string);
+    printf("Received: %zu bytes\n\n", k);
+} // end get_hello()
+
+
+
 int main(void)
 {
     // *** this code down to the next "// ***" does not need to be changed except the port number
@@ -169,6 +183,10 @@ int main(void)
         get_uts(sockfd);
         break;
       case 4 :
+        send_menu_option(sockfd, "4");
+        get_filenames(sockfd);
+        break;
+      case 5 :
         send_menu_option(sockfd, "4");
         break;
       case 7 :
