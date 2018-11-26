@@ -25,12 +25,13 @@
 
 
 /* TODO:
- * 1) error handling
+ * 1) basic error handling
  * 2) stat 
  * 3) ip address display
- * 4) get time
- * 5) error handling for 
+ * 5) error handling for file send
  * 6) upload file to client on client selection
+ * 7) signal interupts
+ * 8) sort default on server loop switch
  */
 // thread function
 void *client_handler(void *);
@@ -50,6 +51,7 @@ void sendRandArray();
 void get_and_send_ints(int);
 void send_uts();
 void send_file_names();
+void send_time(int socket);
 // you shouldn't need to change main() in the server except the port number
 int main(void)
 {
@@ -136,7 +138,7 @@ void *client_handler(void *socket_desc)
 
     /* ============================ Switch interface ==================== */
     
-    int choice; 
+    int choice;
 
     while (choice != 7) {
 
@@ -159,6 +161,11 @@ void *client_handler(void *socket_desc)
       break;
     case 5 :
       printf("choice 5\n");
+      send_time(connfd);
+      break;
+    case 6 :
+      printf("choice 6\n");
+      
       break;
     case 7 :
       printf("choice 7\n");
@@ -364,40 +371,85 @@ void send_file_names(int socket)
     int status;
     int n;
 
-    // string to concat filenames with
-    int char_count = 0;// this is to hold the length of how long the filelist[] will be
-    int current_file = scandir("./upload", &namelist, NULL, alphasort);
-    // counts the length of the filelist string
-    while (current_file--) {
-      // get the lenght of the string
-      int str_length = strlen(namelist[current_file]->d_name);
-      //printf("%d\n", str_length);
-      char_count += (str_length + 1); // plus 1 for each \n ??????
-    }
-    //printf("char count %d\n", char_count);
+    /** get the length of each filename in the directory to make an array */
 
-    // This holds the total length of the char array of file names
-    char filelist[char_count];
+    /* int char_count = 0;// this is to hold the length of how long the filelist[] will be */
+    /* int current_file = scandir("upload", &namelist, NULL, alphasort); */
+    /* // counts the length of the filelist string */
+    /* while (current_file--) { */
+    /*   // get the lenght of the string */
+    /*   int str_length = strlen(namelist[current_file]->d_name); */
+    /*   //printf("%d\n", str_length); */
+    /*   char_count += (str_length + 1); // plus 1 for each \n ?????? */
+    /* } */
+    /* //printf("char count %d\n", char_count); */
+
+    /* // This holds the total length of the char array of file names */
+    char filelist[500];
 
     n = scandir("upload", &namelist, NULL, alphasort);
     if (n < 0)
         perror("scandir");
     else {
       while (n--) {
-        //printf("\n%s", namelist[n]->d_name); // print the name of the file
-        strcat(filelist, namelist[n]->d_name);
-        strcat(filelist, "\n");
+        printf("%s\n", namelist[n]->d_name); // print the name of the file
+         strcat(filelist, namelist[n]->d_name);
+         strcat(filelist, "\n");
         free(namelist[n]);
       }
       free(namelist);
     }
-    printf("%s", filelist);
 
+    strcat(filelist, "\0"); // add this to end the stirng
+    //printf("char count = %d\n", char_count);
+    printf("%s\n", filelist);
+
+    /* // send the length of the string */
+    /* size_t string_size = strlen(filelist) + 1; */
+    /* writen(socket, (unsigned char *) &string, sizeof(size_t));	 */
+    /* writen(socket, (unsigned char *) filelist, string);	   */
+
+    char testArray[60] = "one\ntwo\nthree\n";
     // send the string
     size_t string = strlen(filelist) + 1;
-    writen(socket, (unsigned char *) &string, sizeof(size_t));	
-    writen(socket, (unsigned char *) filelist, string);	  
+    writen(socket, (unsigned char *) &string, sizeof(size_t));
+    writen(socket, (unsigned char *) filelist, string);
+
+  // send the string as payload
+    /* size_t payload_length = sizeof(filelist); */
+    
+    /* writen(socket, (unsigned char *) &payload_length, sizeof(size_t)); */
+    /* writen(socket, (unsigned char *) filelist, payload_length); */
+
+    
 } // end of send_file_names()
+
+void send_time(int socket)
+{
+  time_t t;    // always look up the manual to see the error conditions
+    //  here "man 2 time"
+    if ((t = time(NULL)) == -1) {
+	perror("time error");
+	exit(EXIT_FAILURE);
+    }
+
+    // localtime() is in standard library so error conditions are
+    //  here "man 3 localtime"
+    struct tm *tm;
+    if ((tm = localtime(&t)) == NULL) {
+	perror("localtime error");
+	exit(EXIT_FAILURE);
+    }    
+    
+    printf("%s\n", asctime(tm));
+
+    //char hello_string[100]; 
+    size_t n = strlen(asctime(tm)) + 1;
+    writen(socket, (unsigned char *) &n, sizeof(size_t));	
+    writen(socket, (unsigned char *) asctime(tm), n);	  
+
+
+}
 
 
 int getIp()

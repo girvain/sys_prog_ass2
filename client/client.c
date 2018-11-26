@@ -54,7 +54,7 @@ void get_hello(int socket)
 
 void displayOptions()
 {
-  puts("Enter an option:\n1. Display name/ID\n2. Display array of random ints\n3. Display the uname\n4. List files");
+  puts("\nEnter an option:\n1. Display name/ID\n2. Display array of random ints\n3. Display the uname\n4. List files\n5. Get time\n6. Download file\n7. Exit\n");
 }
 
 void send_menu_option(int socket, char *hello_string)
@@ -119,19 +119,43 @@ void get_uts(int socket)
 
 }
 
+/* Add an extra send/recieve to this function to get the size of the data being sent
+ * then make the hello_string that size.
+ */
 void get_filenames(int socket)
 {
-    char hello_string[255];
+  char hello_string[512];
+    size_t k;
+   
+    readn(socket, (unsigned char *) &k, sizeof(size_t));
+    //char hello_string[k];
+    readn(socket, (unsigned char *) hello_string, k);
+
+    printf("filenames in upload directory:\n%s", hello_string);
+    //printf("Received: %zu bytes\n\n", k);
+
+    // payload way, not working with extra chars in results
+/* int array[256]; */
+/*   size_t payload_length; */
+/*   size_t n = readn(socket, (unsigned char *) &payload_length, sizeof(size_t)); */
+/*   printf("payload_length is: %zu (%zu bytes)\n", payload_length, n); */
+/*   n = readn(socket, (unsigned char *) array, payload_length); */
+
+/*  printf("filenames in upload directory:\n%s", array); */
+
+
+} // end get_hello()
+
+void get_time(int socket)
+{
+  char hello_string[32];
     size_t k;
 
     readn(socket, (unsigned char *) &k, sizeof(size_t));	
     readn(socket, (unsigned char *) hello_string, k);
-
-    printf("filenames in upload directory:\n%s", hello_string);
-    printf("Received: %zu bytes\n\n", k);
-} // end get_hello()
-
-
+    
+    printf("%s\n", hello_string);
+}
 
 int main(void)
 {
@@ -187,7 +211,8 @@ int main(void)
         get_filenames(sockfd);
         break;
       case 5 :
-        send_menu_option(sockfd, "4");
+        send_menu_option(sockfd, "5");
+        get_time(sockfd);
         break;
       case 7 :
         send_menu_option(sockfd, "7");
