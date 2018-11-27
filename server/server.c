@@ -501,7 +501,7 @@ void* send_file(int *arg)
             if(nread > 0)
               {
                 printf("Sending \n");
-                write(connfd, buff, nread);
+                writen(connfd, buff, nread);
               }
             if (nread < 1024)
               {
