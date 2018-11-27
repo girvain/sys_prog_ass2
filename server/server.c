@@ -23,6 +23,9 @@
 // includes for stat etc
 
 
+#include <fcntl.h>
+#include <sys/sendfile.h>
+#include <arpa/inet.h>
 
 /* TODO:
  * 1) basic error handling
@@ -32,6 +35,8 @@
  * 6) upload file to client on client selection
  * 7) signal interupts
  * 8) sort default on server loop switch
+ * 9) sort global variables in send_file
+ *10) clean up files into headers
  */
 // thread function
 void *client_handler(void *);
@@ -52,13 +57,20 @@ void get_and_send_ints(int);
 void send_uts();
 void send_file_names();
 void send_time(int socket);
+void *send_file(int *arg);
+
+
+struct sockaddr_in serv_addr; 
+struct sockaddr_in client_addr;
+char fname[100];
+
 // you shouldn't need to change main() in the server except the port number
 int main(void)
 {
     int listenfd = 0, connfd = 0;
 
-struct sockaddr_in serv_addr; 
-struct sockaddr_in client_addr;
+/* struct sockaddr_in serv_addr;  */
+/* struct sockaddr_in client_addr; */
 socklen_t socksize = sizeof(struct sockaddr_in);
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
     memset(&serv_addr, '0', sizeof(serv_addr));
@@ -142,6 +154,7 @@ void *client_handler(void *socket_desc)
 
     while (choice != 7) {
 
+    choice = recieve_menu_option(connfd);
     switch(choice) {
     case 1 :
       printf("choice 1\n");
@@ -165,6 +178,15 @@ void *client_handler(void *socket_desc)
       break;
     case 6 :
       printf("choice 6\n");
+      //char fname[100];
+      // enter the name of file to send on the server, change this later!!
+      scanf("%s", fname);
+      pthread_t tid; 
+      int err;
+      err = pthread_create(&tid, NULL, &send_file, &connfd);
+        if (err != 0)
+            printf("\ncan't create thread :[%s]", strerror(err));
+        close(connfd);
       
       break;
     case 7 :
@@ -175,7 +197,6 @@ void *client_handler(void *socket_desc)
       break;
         }
 
-    choice = recieve_menu_option(connfd);
 
     }// end of while
 
@@ -451,7 +472,58 @@ void send_time(int socket)
 
 }
 
+/* ================================== send files =============================*/
 
+//char fname[100];
+void* send_file(int *arg)
+{
+      int connfd=(int)*arg;
+      printf("Connection accepted and id: %d\n",connfd);
+      printf("Connected to Clent: %s:%d\n",inet_ntoa(serv_addr.sin_addr),ntohs(serv_addr.sin_port));
+       write(connfd, fname,256);
+
+        FILE *fp = fopen(fname,"rb");
+        if(fp==NULL)
+        {
+            printf("File opern error");
+            return 1;   
+        }   
+
+        /* Read data from file and send it */
+        while(1)
+          {
+            /* First read file in chunks of 256 bytes */
+            unsigned char buff[1024]={0};
+            int nread = fread(buff,1,1024,fp);
+            //printf("Bytes read %d \n", nread);        
+
+            /* If read was success, send data. */
+            if(nread > 0)
+              {
+                printf("Sending \n");
+                write(connfd, buff, nread);
+              }
+            if (nread < 1024)
+              {
+                if (feof(fp))
+                  {
+                    printf("End of file\n");
+		    printf("File transfer completed for id: %d\n",connfd);
+                  }
+                if (ferror(fp))
+                    printf("Error reading\n");
+                break;
+              }
+          }
+        printf("Closing Connection for id: %d\n",connfd);
+        close(connfd); 
+        shutdown(connfd,SHUT_WR);
+        sleep(2);
+}
+
+
+
+/* ================================== end of send files =======================*/
 int getIp()
 {
 int fd;

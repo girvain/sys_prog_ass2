@@ -157,6 +157,54 @@ void get_time(int socket)
     printf("%s\n", hello_string);
 }
 
+/* ============================= recieve file ============================== */
+void gotoxy(int x,int y)
+ {
+ printf("%c[%d;%df",0x1B,y,x);
+ }
+
+void get_file(int sockfd)
+{
+  system("clear");
+  //int sockfd = 0;
+    int bytesReceived = 0;
+    char recvBuff[1024];
+    memset(recvBuff, '0', sizeof(recvBuff));
+
+ /* Create file where data will be stored */
+  FILE *fp;
+	char fname[100];
+	read(sockfd, fname, 256);
+	//strcat(fname,"AK");
+	printf("File Name: %s\n",fname);
+	printf("Receiving file...");
+   	 fp = fopen(fname, "ab"); 
+    	if(NULL == fp)
+    	{
+       	 printf("Error opening file");
+         return 1;
+    	}
+    long double sz=1;
+    /* Receive data in chunks of 256 bytes */
+    while((bytesReceived = read(sockfd, recvBuff, 1024)) > 0)
+    { 
+        sz++;
+        gotoxy(0,4);
+        printf("Received: %llf Mb",(sz/1024));
+	fflush(stdout);
+        // recvBuff[n] = 0;
+        fwrite(recvBuff, 1,bytesReceived,fp);
+        printf("%s \n", recvBuff);
+    }
+
+    if(bytesReceived < 0)
+    {
+        printf("\n Read Error \n");
+    }
+    printf("\nFile OK....Completed\n");
+
+}
+
 int main(void)
 {
     // *** this code down to the next "// ***" does not need to be changed except the port number
@@ -214,6 +262,11 @@ int main(void)
         send_menu_option(sockfd, "5");
         get_time(sockfd);
         break;
+      case 6 :
+        send_menu_option(sockfd, "6");
+        get_file(sockfd);
+        break;
+
       case 7 :
         send_menu_option(sockfd, "7");
         break;
