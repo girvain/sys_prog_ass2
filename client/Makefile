@@ -1,7 +1,7 @@
 # Only the next 3 lines need to be edited - leave the rest!
 TARGET = client 
-DEPS = rdwrn.h
-OBJ = rdwrn.o client.o
+DEPS = rdwrn.h client_functions.h
+OBJ = rdwrn.o client.o client_functions.o
 
 CC=cc
 CFLAGS=-I. -Wall -g -O0
