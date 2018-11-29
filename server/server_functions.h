@@ -1,7 +1,6 @@
 
 void send_hello(int);
 int getIp();
-int recieve_menu_option(int socket);
 void sendRandArray();
 void get_and_send_ints(int);
 void send_uts();

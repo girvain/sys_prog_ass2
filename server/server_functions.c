@@ -82,8 +82,8 @@ void send_uts(int socket)
 
 void send_file_names(int socket)
 {
-    //stat stuff
-    /* struct stat *buffer;  */
+    /* //stat stuff */
+    /* struct stat *buffer; */
     /* buffer = malloc(sizeof(struct stat)); */
     /* int status; */
     /* // scandir stuff */
@@ -123,7 +123,7 @@ void send_file_names(int socket)
     /* } */
     /* printf("%s", filelist); */
 
-
+    //=========================================
 
   
     struct dirent **namelist;
@@ -174,6 +174,12 @@ void send_file_names(int socket)
     writen(socket, (unsigned char *) &string, sizeof(size_t));
     writen(socket, (unsigned char *) filelist, string);
 
+
+
+
+
+
+    
   // send the string as payload
     /* size_t payload_length = sizeof(filelist); */
     
@@ -331,8 +337,46 @@ void send_file3(int arg)
             printf("File opern error");
             return 1;   
         }   
+        
 
-        /* Read data from file and send it */
+
+
+
+        /* // trial code to send filesize */
+struct stat *buf;
+
+buf = malloc(sizeof(struct stat));
+
+stat("text.txt", buf);
+int size = buf->st_size;
+printf("file size is %d\n",size);
+
+//free(buf);
+        /* Get file stats */
+ char convert_int[64];
+ sprintf(convert_int, "%d", size);
+ size_t payload_length = sizeof(convert_int);
+    
+    writen(connfd, (unsigned char *) &payload_length, sizeof(size_t));
+    writen(connfd, (unsigned char *) convert_int, payload_length);
+
+
+        /* int len = writen(connfd, size, sizeof(size)); */
+        /* if (len < 0) */
+        /* { */
+        /*       fprintf(stderr, "Error on sending greetings --> %s", strerror(errno)); */
+
+        /*       exit(EXIT_FAILURE); */
+        /* } */
+
+        /* fprintf(stdout, "Server sent %d bytes for the size\n", len); */
+        // end of trial
+
+
+
+
+        
+        /* Read data from file and send it*/
         while(1)
           {
             /* First read file in chunks of 256 bytes */
@@ -359,7 +403,7 @@ void send_file3(int arg)
               }
           }
         printf("Closing Connection for id: %d\n",connfd);
-        close(connfd); 
+        //close(connfd); 
         //shutdown(connfd,SHUT_WR);
         //        sleep(2);
 }

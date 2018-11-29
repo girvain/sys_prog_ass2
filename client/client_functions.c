@@ -178,9 +178,36 @@ void get_file2(int sockfd)
          return 1;
     	}
     long double sz=1;
+
+
+    
+    // trial code
+    int file_size;
+    size_t payload_length;
+  size_t n = readn(sockfd, (unsigned char *) &payload_length, sizeof(size_t));
+  n = readn(sockfd, (unsigned char *) recvBuff, payload_length);
+  file_size = atoi(recvBuff);
+  printf("file size is %i\n", file_size);
+
+
+    /* /\* Receiving file size *\/ */
+    /*     int file_size = readn(sockfd, recvBuff, 1024); */
+    /*     //int file_size = atoi(recvBuff); */
+    /*     fprintf(stdout, "\nFile size : %d\n", file_size); */
+        //    int file_size = atoi(fp);
+    //printf("%i", file_size);
+        int remain_data = file_size;
+        printf("%i", remain_data);
+        // end of trial code
+
+
+
+        
     /* Receive data in chunks of 256 bytes */
-    while((bytesReceived = read(sockfd, recvBuff, 1024)) > 0)
-    { 
+        //while(((bytesReceived = read(sockfd, recvBuff, 1024)) > 0) && (remain_data > 0))
+        while(remain_data > 0)
+    {
+      bytesReceived = read(sockfd, recvBuff, 1024);
       sz++;
         gotoxy(0,4);
         printf("Received: %llf Mb",(sz/1024));
@@ -188,11 +215,11 @@ void get_file2(int sockfd)
         // recvBuff[n] = 0;
         fwrite(recvBuff, 1,bytesReceived,fp);
         printf("%s \n", recvBuff);
-
+        printf("%i\n", bytesReceived);
+        remain_data -= bytesReceived;
         // Clear the leftover stuff in the buffer 
         bzero(recvBuff, 1024);
-
-
+        
     }
 
     if(bytesReceived < 0)
@@ -200,5 +227,6 @@ void get_file2(int sockfd)
         printf("\n Read Error \n");
     }
     printf("\nFile OK....Completed\n");
+    //close(sockfd);
 
 }

@@ -32,10 +32,10 @@
  * 7) signal interupts
  * 8) sort default on server loop switch
  * 9) sort global variables in send_file
- *10) clean up files into headers
  */
 // thread function
 void *client_handler(void *);
+int recieve_menu_option(int);
 
 struct sockaddr_in serv_addr; 
 struct sockaddr_in client_addr;
@@ -113,7 +113,7 @@ int fd;
 	//pthread_join( sniffer_thread , NULL);
 	printf("Handler assigned\n");
 
-    send_file3(connfd);
+    //send_file3(connfd);
 
     } // end of while 
 
@@ -189,8 +189,9 @@ void *client_handler(void *socket_desc )
     /* choice = recieve_menu_option(connfd); */
     /* }// end of while */
 
+    //send_file_names();
+    while(recieve_menu_option(connfd) != 7);
     //send_file3(connfd);
-    //recieve_menu_option(connfd);
     
     printf("Thread %lu exiting\n", (unsigned long) pthread_self());
 
@@ -220,12 +221,16 @@ int recieve_menu_option(int socket)
       send_hello(socket);
       return 1;
     case '2':
+      get_and_send_ints(socket);
       return 2;
     case '3':
+      send_uts(socket);
       return 3;
     case '4':
+      send_file_names(socket);
       return 4;
     case '5':
+      send_time(socket);
       return 5;
     case '6':
       send_file3(socket);
