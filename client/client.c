@@ -63,53 +63,57 @@ int main(void)
     } else
        printf("Connected to server...\n");
 
-    // ***
-    // your own application code will go here and replace what is below... 
-    // i.e. your menu etc.
+    /** Use juse the file transfer */
+    get_file2(sockfd);
 
-    int user_input;
-    while (user_input != 7) {
-      displayOptions();
-      scanf("%i", &user_input);
+    
+    //your own application code will go here and replace what is below... 
+    //i.e. your menu etc. /
 
-      //send_menu_option(sockfd, user_input);
+    /* int user_input; */
+    /* while (user_input != 7) */
+    /* { */
+    /*   displayOptions(); */
+    /*     scanf("%i", &user_input); */
 
-      switch(user_input) {
-      case 1 :
-        send_menu_option(sockfd, "1");
-        // send/recieve function !!!
-        get_hello(sockfd);
-        break;
-      case 2 :
-        send_menu_option(sockfd, "2");
-        send_and_get_ints(sockfd);
-        break;
-      case 3 :
-        send_menu_option(sockfd, "3");
-        get_uts(sockfd);
-        break;
-      case 4 :
-        send_menu_option(sockfd, "4");
-        get_filenames(sockfd);
-        break;
-      case 5 :
-        send_menu_option(sockfd, "5");
-        get_time(sockfd);
-        break;
-      case 6 :
-        send_menu_option(sockfd, "6");
-        get_file(sockfd);
-        break;
+    /*   //send_menu_option(sockfd, user_input); */
 
-      case 7 :
-        send_menu_option(sockfd, "7");
-        break;
+    /*   switch(user_input) { */
+    /*   case 1 : */
+    /*    send_menu_option(sockfd, "1"); */
+    /*     // send/recieve function !!! */
+    /*     get_hello(sockfd); */
+    /*     break; */
+    /*   case 2 : */
+    /*     send_menu_option(sockfd, "2"); */
+    /*     send_and_get_ints(sockfd); */
+    /*     break; */
+    /*   case 3 : */
+    /*     send_menu_option(sockfd, "3"); */
+    /*     get_uts(sockfd); */
+    /*     break; */
+    /*   case 4 : */
+    /*     send_menu_option(sockfd, "4"); */
+    /*     get_filenames(sockfd); */
+    /*     break; */
+    /*   case 5 : */
+    /*     send_menu_option(sockfd, "5"); */
+    /*     get_time(sockfd); */
+    /*     break; */
+    /*   case 6 : */
+    /*     send_menu_option(sockfd, "6"); */
+    /*     get_file2(sockfd); */
+    /*     break; */
+    /*   case 7 : */
+    /*     send_menu_option(sockfd, "7"); */
+    /*     break; */
 
-      } 
-      //printf("Would you like another option[Y/n]\n");
-    }// end of while
+    /*   } */
+    /*   //printf("Would you like another option[Y/n]\n"); */
+    /*   }// end of while */
 
-    // *** make sure sockets are cleaned up
+      
+    /*** make sure sockets are cleaned up */
     close(sockfd);
 
     exit(EXIT_SUCCESS);

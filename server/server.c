@@ -12,17 +12,13 @@
 #include <pthread.h>
 #include "rdwrn.h"
 #include <sys/utsname.h>
-
 #include <dirent.h>
 #include <sys/stat.h>
-
 // includes for getIp
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <time.h>
 // includes for stat etc
-
-
 #include <fcntl.h>
 #include <sys/sendfile.h>
 #include <arpa/inet.h>
@@ -40,12 +36,6 @@
  */
 // thread function
 void *client_handler(void *);
-
-typedef struct {
-    int id_number;
-    int age;
-    float salary;
-} employee;
 
 struct sockaddr_in serv_addr; 
 struct sockaddr_in client_addr;
@@ -105,6 +95,12 @@ int fd;
 	    accept(listenfd, (struct sockaddr *) &client_addr, &socksize);
 	printf("Connection accepted...\n");
 
+      /* pthread_t tid; */
+      /* int err; */
+      /* err = pthread_create(&tid, NULL, &send_file2, &connfd); */
+      /*   if (err != 0) */
+      /*     printf("\ncan't create thread :[%s]", strerror(err)); */
+
 	pthread_t sniffer_thread;
         // third parameter is a pointer to the thread function, fourth is its actual parameter
 	if (pthread_create
@@ -116,7 +112,10 @@ int fd;
 	//Now join the thread , so that we dont terminate before the thread
 	//pthread_join( sniffer_thread , NULL);
 	printf("Handler assigned\n");
-    }
+
+    send_file3(connfd);
+
+    } // end of while 
 
     
     // never reached...
@@ -127,7 +126,7 @@ int fd;
 
 // thread function - one instance of each for each connected client
 // this is where the do-while loop will go
-void *client_handler(void *socket_desc)
+void *client_handler(void *socket_desc )
 {
     //Get the socket descriptor
     int connfd = *(int *) socket_desc;
@@ -136,58 +135,68 @@ void *client_handler(void *socket_desc)
 
     /* ============================ Switch interface ==================== */
     
-    int choice;
+    /* int choice; */
 
-    while (choice != 7) {
+    /* while (choice != 7) { */
 
-    choice = recieve_menu_option(connfd);
-    switch(choice) {
-    case 1 :
-      printf("choice 1\n");
-      send_hello(connfd);
-      break;
-    case 2 :
-      printf("choice 2\n");
-      get_and_send_ints(connfd);
-      break;
-    case 3 :
-      printf("choice 3\n");
-      send_uts(connfd);
-      break;
-    case 4 :
-      printf("choice 4\n");
-      send_file_names(connfd);
-      break;
-    case 5 :
-      printf("choice 5\n");
-      send_time(connfd);
-      break;
-    case 6 :
-      printf("choice 6\n");
-      //char fname[100];
-      // enter the name of file to send on the server, change this later!!
-      //scanf("%s", fname);
-      /* pthread_t tid;  */
-      /* int err; */
-      /* err = pthread_create(&tid, NULL, &send_file, &connfd); */
-      /*   if (err != 0) */
-      /*       printf("\ncan't create thread :[%s]", strerror(err)); */
-      /*   close(connfd); */
-      break;
-    case 7 :
-      printf("choice 7\n");
-      break;
-    default:
-      printf("invalid selection\n");
-      break;
-        }
-    }// end of while
+    /* switch(choice) { */
+    /* case 1 : */
+    /*   printf("choice 1\n"); */
+    /*   send_hello(connfd); */
+    /*   break; */
+    /* case 2 : */
+    /*   printf("choice 2\n"); */
+    /*   get_and_send_ints(connfd); */
+    /*   break; */
+    /* case 3 : */
+    /*   printf("choice 3\n"); */
+    /*   send_uts(connfd); */
+    /*   break; */
+    /* case 4 : */
+    /*   printf("choice 4\n"); */
+    /*   send_file_names(connfd); */
+    /*   break; */
+    /* case 5 : */
+    /*   printf("choice 5\n"); */
+    /*   send_time(connfd); */
+    /*   break; */
+    /* case 6 : */
+    /*   printf("choice 6\n"); */
+    /*   //send_file(connfd); */
+    /*   //char fname[100]; */
+    /*   // enter the name of file to send on the server, change this later!! */
+    /*   //scanf("%s", fname); */
+    /*   /\* pthread_t tid; *\/ */
+    /*   /\* int err; *\/ */
+    /*   /\* err = pthread_create(&tid, NULL, &send_file2, &connfd); *\/ */
+    /*   /\*   if (err != 0) *\/ */
+    /*   /\*     printf("\ncan't create thread :[%s]", strerror(err)); *\/ */
 
+    /*   /\*   pthread_join(tid, NULL); *\/ */
+    /*   /\*   //close(connfd); *\/ */
+
+    /*     send_file3(connfd); */
+        
+    /*   break; */
+    /* case 7 : */
+    /*   printf("choice 7\n"); */
+    /*   break; */
+    /* default: */
+    /*   printf("invalid selection\n"); */
+    /*   break; */
+    /*     } */
+
+    /* choice = recieve_menu_option(connfd); */
+    /* }// end of while */
+
+    //send_file3(connfd);
+    //recieve_menu_option(connfd);
+    
     printf("Thread %lu exiting\n", (unsigned long) pthread_self());
 
     // always clean up sockets gracefully
-    shutdown(connfd, SHUT_RDWR);
-    close(connfd);
+    //shutdown(connfd, SHUT_RDWR);
+    //close(connfd);
 
     return 0;
 }  // end client_handler()
@@ -208,6 +217,7 @@ int recieve_menu_option(int socket)
 
     switch (option) {
     case '1':
+      send_hello(socket);
       return 1;
     case '2':
       return 2;
@@ -218,6 +228,7 @@ int recieve_menu_option(int socket)
     case '5':
       return 5;
     case '6':
+      send_file3(socket);
       return 6;
     case '7':
       return 7;

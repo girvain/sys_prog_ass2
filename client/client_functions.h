@@ -8,4 +8,6 @@ void get_uts(int socket);
 void get_filenames(int socket);
 void get_time(int socket);
 void gotoxy(int x,int y);
-void get_file(int sockfd);
+void get_file(void *sockfd);
+void get_file2(int sockfd);
+void get_file3(int sockfd);

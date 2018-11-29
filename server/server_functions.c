@@ -10,7 +10,6 @@
 #include <pthread.h>
 #include "rdwrn.h"
 #include <sys/utsname.h>
-
 #include <dirent.h>
 #include <sys/stat.h>
 
@@ -36,7 +35,6 @@ void send_hello(int socket)
 
 
 int generateRandNum()
-  
 {
   int randNum = rand();
   int inRangeNum = (randNum % 1000);
@@ -146,7 +144,7 @@ void send_file_names(int socket)
     /* //printf("char count %d\n", char_count); */
 
     /* // This holds the total length of the char array of file names */
-    char filelist[500];
+    char filelist[500] = "";
 
     n = scandir("upload", &namelist, NULL, alphasort);
     if (n < 0)
@@ -214,50 +212,154 @@ void send_time(int socket)
 
 /* ================================== send files =============================*/
 
-/* //char fname[100]; */
-/* void* send_file(int *arg) */
-/* { */
-/*       int connfd=(int)*arg; */
-/*       printf("Connection accepted and id: %d\n",connfd); */
-/*       printf("Connected to Clent: %s:%d\n",inet_ntoa(serv_addr.sin_addr),ntohs(serv_addr.sin_port)); */
-/*        write(connfd, fname,256); */
+//char fname[100];
+void* send_file(int *arg)
+{
+  //int connfd = (int)arg;
+  int connfd = (int*)arg;
+  char fname[] = "text.txt";
+  printf("Connection accepted and id: %d\n",connfd);
+      //printf("Connected to Clent: %s:%d\n",inet_ntoa(serv_addr.sin_addr),ntohs(serv_addr.sin_port));
+  //write(connfd, fname,256);
 
-/*         FILE *fp = fopen(fname,"rb"); */
-/*         if(fp==NULL) */
-/*         { */
-/*             printf("File opern error"); */
-/*             return 1;    */
-/*         }    */
+  FILE *fp = fopen(fname, "rb");
+        if(fp==NULL)
+        {
+            printf("File opern error");
+            return 1;
+        }
 
-/*         /\* Read data from file and send it *\/ */
-/*         while(1) */
-/*           { */
-/*             /\* First read file in chunks of 256 bytes *\/ */
-/*             unsigned char buff[1024]={0}; */
-/*             int nread = fread(buff,1,1024,fp); */
-/*             //printf("Bytes read %d \n", nread);         */
+        /* Read data from file and send it */
+        while(1)
+          {
+            /* First read file in chunks of 256 bytes */
+            unsigned char buff[256]={0};
+            int nread = fread(buff, sizeof(char), sizeof(buff), fp);
+            //int nread = readn(connfd, buff, 1024);
+            printf("Bytes read %d \n", nread);
+            
+            
+            if (nread == 0)
+              break;
 
-/*             /\* If read was success, send data. *\/ */
-/*             if(nread > 0) */
-/*               { */
-/*                 printf("Sending \n"); */
-/*                 writen(connfd, buff, nread); */
-/*               } */
-/*             if (nread < 1024) */
-/*               { */
-/*                 if (feof(fp)) */
-/*                   { */
-/*                     printf("End of file\n"); */
-/* 		    printf("File transfer completed for id: %d\n",connfd); */
-/*                   } */
-/*                 if (ferror(fp)) */
-/*                     printf("Error reading\n"); */
-/*                 break; */
-/*               } */
-/*           } */
-/*         printf("Closing Connection for id: %d\n",connfd); */
-/*         close(connfd);  */
-/*         shutdown(connfd,SHUT_WR); */
-/*         sleep(2); */
-/* } */
 
+            /* If read was success, send data. */
+            if(nread > 0)
+              {
+                printf("Sending \n");
+                write(connfd, buff, nread);
+                //if (write(connfd, buff, nread) == -1)
+                // printf("error writting to socket");
+              }
+            if (nread < 256)
+              {
+                if (feof(fp))
+                  {
+                    printf("End of file\n");
+                    printf("File transfer completed for id: %d\n",connfd);
+                    
+                  }
+                if (ferror(fp))
+                    printf("Error reading\n");
+                break;
+              }
+          }
+        printf("Closing Connection for id: %d\n",connfd);
+        //close(connfd);
+        //shutdown(connfd,SHUT_WR);
+        //        sleep(2);
+
+}
+
+void* send_file2(int *arg)
+{
+  char fname[] = "text.txt";
+      int connfd=(int)*arg;
+      printf("Connection accepted and id: %d\n",connfd);
+      //printf("Connected to Clent: %s:%d\n",inet_ntoa(serv_addr.sin_addr),ntohs(serv_addr.sin_port));
+      //write(connfd, fname,256);
+       
+        FILE *fp = fopen(fname,"rb");
+        if(fp==NULL)
+        {
+            printf("File opern error");
+            return 1;   
+        }   
+
+        /* Read data from file and send it */
+        while(1)
+          {
+            /* First read file in chunks of 256 bytes */
+            unsigned char buff[1024]={0};
+            int nread = fread(buff,1,1024,fp);
+            //printf("Bytes read %d \n", nread);        
+
+            /* If read was success, send data. */
+            if(nread > 0)
+              {
+                printf("Sending \n");
+                write(connfd, buff, nread);
+              }
+            if (nread < 1024)
+              {
+                if (feof(fp))
+                  {
+                    printf("End of file\n");
+		    printf("File transfer completed for id: %d\n",connfd);
+                  }
+                if (ferror(fp))
+                    printf("Error reading\n");
+                break;
+              }
+          }
+        printf("Closing Connection for id: %d\n",connfd);
+        close(connfd); 
+        //shutdown(connfd,SHUT_WR);
+        //        sleep(2);
+}
+void send_file3(int arg)
+{
+  char fname[] = "text.txt";
+      int connfd=arg;
+      printf("Connection accepted and id: %d\n",connfd);
+      //printf("Connected to Clent: %s:%d\n",inet_ntoa(serv_addr.sin_addr),ntohs(serv_addr.sin_port));
+      //write(connfd, fname,256);
+       
+        FILE *fp = fopen(fname,"rb");
+        if(fp==NULL)
+        {
+            printf("File opern error");
+            return 1;   
+        }   
+
+        /* Read data from file and send it */
+        while(1)
+          {
+            /* First read file in chunks of 256 bytes */
+            unsigned char buff[1024]={0};
+            int nread = fread(buff,1,1024,fp);
+            //printf("Bytes read %d \n", nread);        
+
+            /* If read was success, send data. */
+            if(nread > 0)
+              {
+                printf("Sending \n");
+                write(connfd, buff, nread);
+              }
+            if (nread < 1024)
+              {
+                if (feof(fp))
+                  {
+                    printf("End of file\n");
+		    printf("File transfer completed for id: %d\n",connfd);
+                  }
+                if (ferror(fp))
+                    printf("Error reading\n");
+                break;
+              }
+          }
+        printf("Closing Connection for id: %d\n",connfd);
+        close(connfd); 
+        //shutdown(connfd,SHUT_WR);
+        //        sleep(2);
+}
