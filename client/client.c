@@ -109,9 +109,16 @@ int main(void)
         char fname[256];
         printf("Enter the file name you want \n");
         scanf("%s", fname);
-        file_check(sockfd, fname);
 
-        get_file2(sockfd);
+        int condition = file_check(sockfd, fname);
+        printf("%d", condition);
+        if (condition == 0) {
+          //printf("file check exited right");
+          get_file2(sockfd, &fname);
+        }
+        
+        //get_file2(sockfd, &fname);
+       
         break;
       case 7 :
         send_menu_option(sockfd, "7");

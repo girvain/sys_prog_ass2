@@ -234,8 +234,15 @@ int recieve_menu_option(int socket)
       send_time(socket);
       return 5;
     case '6':
-      file_check(socket);
-      send_file3(socket);
+      //file_check(socket);
+      //send_file3(socket);
+
+      if (file_check(socket) > 0) {
+        fprintf(stderr, "error: file not on server");
+      }
+      else {
+        send_file3(socket);
+      }
       return 6;
     case '7':
       return 7;

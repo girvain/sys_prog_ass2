@@ -331,10 +331,6 @@ void send_file3(int arg)
       //write(connfd, fname,256);
 
 
-
-      //file_check(connfd);
-
-
     /* Get file name and Create file where data will be stored */
     char fname[256];
     size_t k;
@@ -431,8 +427,6 @@ int file_check(int socket)
     char filelist[500] = "";
     char is_file;
     char not_file = 'n';
-    
-    
 
     
  /* Get file name and Create file where data will be stored */
@@ -465,7 +459,6 @@ int file_check(int socket)
 
 
     // send the string
-
     char is_file_string[] = "File present\n";
     char not_file_string[] = "File not found\n";
 
@@ -475,10 +468,12 @@ int file_check(int socket)
     if (is_file == 'y') {
       writen(socket, (unsigned char *) &is_file_ln, sizeof(size_t));
       writen(socket, (unsigned char *) is_file_string, is_file_ln);
+      return 0;
     }
     else {
       writen(socket, (unsigned char *) &not_file_ln, sizeof(size_t));
       writen(socket, (unsigned char *) not_file_string, not_file_ln);
+      return 1;
     }
     
 }

@@ -157,21 +157,18 @@ void get_file(void *sockfd)
 
 
 
-int get_file2(int sockfd)
+int get_file2(int sockfd, char* fname)
 {
-  system("clear");
+  //system("clear");
     int bytesReceived = 0;
     char recvBuff[1024];
     memset(recvBuff, '0', sizeof(recvBuff));
 
     // send the name of file you want to the server
-    char fname[256];
-      printf("Enter the file name you want \n");
-      scanf("%s", fname);
+    /* char fname[256]; */
+    /*   printf("Enter the file name you want \n"); */
+    /*   scanf("%s", fname); */
 
-
-      // check if the file is on the server with this function
-      //file_check(sockfd, fname);
       
       
       size_t payload_length_fname = sizeof(fname);
@@ -240,12 +237,11 @@ int file_check(int socket, char fname[])
   
     //printf(is_file);
 
-  if (strcmp(is_file, "File present") == 0) {
+  if (strcmp(is_file, "File present\n") == 0) {
     printf(is_file);
     return 0;
   }
-  else {
-    printf(is_file);
-    return 1;
-  }
+  printf(is_file);
+  return 1;
+  
 }
