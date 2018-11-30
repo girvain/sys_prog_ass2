@@ -8,4 +8,4 @@ void send_file_names();
 void send_time(int socket);
 void* send_file(int *arg);
 void* send_file2(int *arg);
-
+int file_check(int socket);

@@ -219,6 +219,7 @@ int recieve_menu_option(int socket)
     switch (option) {
     case '1':
       send_hello(socket);
+      //file_check(socket);
       return 1;
     case '2':
       get_and_send_ints(socket);
@@ -233,6 +234,7 @@ int recieve_menu_option(int socket)
       send_time(socket);
       return 5;
     case '6':
+      file_check(socket);
       send_file3(socket);
       return 6;
     case '7':

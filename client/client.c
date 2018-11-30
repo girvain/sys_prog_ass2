@@ -84,8 +84,8 @@ int main(void)
       switch(user_input) {
       case 1 :
        send_menu_option(sockfd, "1");
-        // send/recieve function !!!
         get_hello(sockfd);
+       //file_check(sockfd, "tt.txt");
         break;
       case 2 :
         send_menu_option(sockfd, "2");
@@ -105,8 +105,13 @@ int main(void)
         break;
       case 6 :
         send_menu_option(sockfd, "6");
+        // send the name of file you want to the server
+        char fname[256];
+        printf("Enter the file name you want \n");
+        scanf("%s", fname);
+        file_check(sockfd, fname);
+
         get_file2(sockfd);
-        //close(sockfd);
         break;
       case 7 :
         send_menu_option(sockfd, "7");

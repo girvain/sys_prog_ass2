@@ -325,13 +325,27 @@ void* send_file2(int *arg)
 }
 void send_file3(int arg)
 {
-  char fname[] = "text.txt";
+  //char fname[] = "text.txt";
       int connfd=arg;
       printf("Connection accepted and id: %d\n",connfd);
-      //printf("Connected to Clent: %s:%d\n",inet_ntoa(serv_addr.sin_addr),ntohs(serv_addr.sin_port));
       //write(connfd, fname,256);
-       
-        FILE *fp = fopen(fname,"rb");
+
+
+
+      //file_check(connfd);
+
+
+    /* Get file name and Create file where data will be stored */
+    char fname[256];
+    size_t k;
+    readn(connfd, (unsigned char *) &k, sizeof(size_t));	
+    readn(connfd, (unsigned char *) fname, k);
+
+    // add the file name to the fname_with_dir to search for the file
+    char fname_with_dir[256] = "./upload/";
+      strcat(fname_with_dir, fname);
+      
+        FILE *fp = fopen(fname_with_dir,"rb");
         if(fp==NULL)
         {
             printf("File opern error");
@@ -342,23 +356,22 @@ void send_file3(int arg)
 
 
 
-        /* // trial code to send filesize */
-struct stat *buf;
+        /* // code to send filesize */
+        struct stat *buf;
+        buf = malloc(sizeof(struct stat));
+        
+        stat(fname, buf);
+        int size = buf->st_size;
+        printf("file size is %d\n",size);
+        //free(buf);
 
-buf = malloc(sizeof(struct stat));
-
-stat("text.txt", buf);
-int size = buf->st_size;
-printf("file size is %d\n",size);
-
-//free(buf);
         /* Get file stats */
- char convert_int[64];
- sprintf(convert_int, "%d", size);
- size_t payload_length = sizeof(convert_int);
-    
-    writen(connfd, (unsigned char *) &payload_length, sizeof(size_t));
-    writen(connfd, (unsigned char *) convert_int, payload_length);
+        char convert_int[64];
+        sprintf(convert_int, "%d", size);
+        size_t payload_length = sizeof(convert_int);
+        
+        writen(connfd, (unsigned char *) &payload_length, sizeof(size_t));
+        writen(connfd, (unsigned char *) convert_int, payload_length);
 
 
         /* int len = writen(connfd, size, sizeof(size)); */
@@ -406,4 +419,66 @@ printf("file size is %d\n",size);
         //close(connfd); 
         //shutdown(connfd,SHUT_WR);
         //        sleep(2);
+}
+
+
+int file_check(int socket)
+{
+     struct dirent **namelist;
+    int status;
+    int n;
+
+    char filelist[500] = "";
+    char is_file;
+    char not_file = 'n';
+    
+    
+
+    
+ /* Get file name and Create file where data will be stored */
+    char fname[256];
+    size_t k;
+    readn(socket, (unsigned char *) &k, sizeof(size_t));	
+    readn(socket, (unsigned char *) fname, k);
+
+   
+    
+    n = scandir("upload", &namelist, NULL, alphasort);
+    if (n < 0)
+        perror("scandir");
+    else {
+      while (n--) {
+        printf("%s\n", namelist[n]->d_name); // print the name of the file
+        if(strcmp(namelist[n]->d_name, fname) == 0) {
+          is_file = 'y';
+           break;
+         }
+        else
+          is_file = 'n';
+        free(namelist[n]);
+      }
+      free(namelist);
+    }
+
+    //printf("char count = %d\n", char_count);
+    printf("%c\n", is_file);
+
+
+    // send the string
+
+    char is_file_string[] = "File present\n";
+    char not_file_string[] = "File not found\n";
+
+    size_t is_file_ln = strlen(is_file_string) + 1;
+    size_t not_file_ln = strlen(not_file_string) + 1;
+
+    if (is_file == 'y') {
+      writen(socket, (unsigned char *) &is_file_ln, sizeof(size_t));
+      writen(socket, (unsigned char *) is_file_string, is_file_ln);
+    }
+    else {
+      writen(socket, (unsigned char *) &not_file_ln, sizeof(size_t));
+      writen(socket, (unsigned char *) not_file_string, not_file_ln);
+    }
+    
 }
