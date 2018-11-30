@@ -425,12 +425,12 @@ int file_check(int socket)
     int n;
 
     char filelist[500] = "";
-    char is_file;
+    char is_file = 'n';
     char not_file = 'n';
 
     
  /* Get file name and Create file where data will be stored */
-    char fname[256];
+    char fname[256] = "";
     size_t k;
     readn(socket, (unsigned char *) &k, sizeof(size_t));	
     readn(socket, (unsigned char *) fname, k);
@@ -470,10 +470,7 @@ int file_check(int socket)
       writen(socket, (unsigned char *) is_file_string, is_file_ln);
       return 0;
     }
-    else {
-      writen(socket, (unsigned char *) &not_file_ln, sizeof(size_t));
-      writen(socket, (unsigned char *) not_file_string, not_file_ln);
-      return 1;
-    }
-    
+    writen(socket, (unsigned char *) &not_file_ln, sizeof(size_t));
+    writen(socket, (unsigned char *) not_file_string, not_file_ln);
+    return 1;
 }

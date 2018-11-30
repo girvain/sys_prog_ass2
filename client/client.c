@@ -106,9 +106,11 @@ int main(void)
       case 6 :
         send_menu_option(sockfd, "6");
         // send the name of file you want to the server
-        char fname[256];
+        char fname[256] = "";
+        bzero(fname, 256); // clear the buffer
         printf("Enter the file name you want \n");
         scanf("%s", fname);
+        printf("This is whats in the buffer: %s\n", fname);
 
         int condition = file_check(sockfd, fname);
         printf("%d", condition);
