@@ -14,7 +14,7 @@
 
 void get_hello(int socket)
 {
-    char hello_string[32];
+    char hello_string[256];
     size_t k;
 
     readn(socket, (unsigned char *) &k, sizeof(size_t));	

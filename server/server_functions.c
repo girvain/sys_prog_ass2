@@ -30,7 +30,7 @@
 void send_hello(int socket)
 {
   char hostbuffer[256]; 
-	char *IPbuffer; 
+	char* IPbuffer; 
 	struct hostent *host_entry; 
 	int hostname; 
 
@@ -54,23 +54,15 @@ void send_hello(int socket)
 						host_entry->h_addr_list[0])); 
 
 
-
     char hello_string_full[250];
-    char IPbuffer_copy[40];
-    char hello_string[] = "hello SP Gavin Ross S1821951 ";
-    //copy strings to new strings
-    strcpy(hello_string_full, hello_string);
-    strcpy(IPbuffer_copy, IPbuffer);
-    printf("%s\n", IPbuffer_copy);
-    // cat IP to the full string
-    strcat(hello_string_full, IPbuffer_copy);
-    //strcat(hello_string_full, "\0");
-    printf("%s\n", hello_string_full);
-    //strcat(hello_string_full, "\0");
-    
-    size_t n = strlen(hello_string_full) + 1;
+    char hello_string[] = "hello SP Gavin Ross S1821951 from IP: ";
+
+    //cat IP to the full string
+    strcat(hello_string, IPbuffer);
+
+    size_t n = strlen(hello_string) + 1;
     writen(socket, (unsigned char *) &n, sizeof(size_t));
-    writen(socket, (unsigned char *) hello_string_full, n);
+    writen(socket, (unsigned char *) hello_string, n);
 
 } // end send_hello()
 
