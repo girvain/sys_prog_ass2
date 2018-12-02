@@ -39,6 +39,7 @@ void recieve_welcome_msg(int socket)
     printf("Received: %zu bytes\n\n", k);
 } // end get_hello()
 
+
 int main(void)
 {
     // *** this code down to the next "// ***" does not need to be changed except the port number
@@ -67,43 +68,39 @@ int main(void)
     //get_file2(sockfd);
 
 
-
-    
-    
     //your own application code will go here and replace what is below... 
     //i.e. your menu etc. /
-
-    int user_input;
-    while (user_input != 7)
+    char user_input[124];
+    //int user_input;
+    while (user_input[0] != '7')
     {
       displayOptions();
-        scanf("%i", &user_input);
+        scanf("%s", user_input);
 
       //send_menu_option(sockfd, user_input);
 
-      switch(user_input) {
-      case 1 :
+      switch(user_input[0]) {
+      case '1' :
        send_menu_option(sockfd, "1");
         get_hello(sockfd);
-       //file_check(sockfd, "tt.txt");
         break;
-      case 2 :
+      case '2' :
         send_menu_option(sockfd, "2");
         send_and_get_ints(sockfd);
         break;
-      case 3 :
+      case '3' :
         send_menu_option(sockfd, "3");
         get_uts(sockfd);
         break;
-      case 4 :
+      case '4' :
         send_menu_option(sockfd, "4");
         get_filenames(sockfd);
         break;
-      case 5 :
+      case '5' :
         send_menu_option(sockfd, "5");
         get_time(sockfd);
         break;
-      case 6 :
+      case '6' :
         send_menu_option(sockfd, "6");
         // send the name of file you want to the server
         char fname[256] = "";
@@ -122,10 +119,11 @@ int main(void)
         //get_file2(sockfd, &fname);
        
         break;
-      case 7 :
+      case '7' :
         send_menu_option(sockfd, "7");
         break;
-
+      default:
+          printf("Option not recognised\n");
       }
       //printf("Would you like another option[Y/n]\n");
       }// end of while

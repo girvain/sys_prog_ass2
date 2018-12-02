@@ -12,24 +12,65 @@
 #include <sys/utsname.h>
 #include <dirent.h>
 #include <sys/stat.h>
-
+#include <netdb.h> 
 // includes for getIp
 #include <net/if.h>
 #include <time.h>
 // includes for stat etc
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <time.h>
 
 #include <fcntl.h>
 #include <sys/sendfile.h>
 #include <arpa/inet.h>
 
+
 // how to send a string
 void send_hello(int socket)
 {
-    char hello_string[] = "hello SP Gavin Ross S1821951";
+  char hostbuffer[256]; 
+	char *IPbuffer; 
+	struct hostent *host_entry; 
+	int hostname; 
 
-    size_t n = strlen(hello_string) + 1;
+	// To retrieve hostname 
+	hostname = gethostname(hostbuffer, sizeof(hostbuffer)); 
+    if (hostname == -1) { 
+		perror("gethostname"); 
+		exit(1); 
+	}
+
+	// To retrieve host information 
+	host_entry = gethostbyname(hostbuffer); 
+    if (host_entry == NULL) { 
+		perror("gethostbyname"); 
+		exit(1); 
+	}
+
+	// To convert an Internet network 
+	// address into ASCII string 
+	IPbuffer = inet_ntoa(*((struct in_addr*) 
+						host_entry->h_addr_list[0])); 
+
+
+
+    char hello_string_full[250];
+    char IPbuffer_copy[40];
+    char hello_string[] = "hello SP Gavin Ross S1821951 ";
+    //copy strings to new strings
+    strcpy(hello_string_full, hello_string);
+    strcpy(IPbuffer_copy, IPbuffer);
+    printf("%s\n", IPbuffer_copy);
+    // cat IP to the full string
+    strcat(hello_string_full, IPbuffer_copy);
+    //strcat(hello_string_full, "\0");
+    printf("%s\n", hello_string_full);
+    //strcat(hello_string_full, "\0");
+    
+    size_t n = strlen(hello_string_full) + 1;
     writen(socket, (unsigned char *) &n, sizeof(size_t));
-    writen(socket, (unsigned char *) hello_string, n);
+    writen(socket, (unsigned char *) hello_string_full, n);
 
 } // end send_hello()
 
@@ -496,3 +537,96 @@ int file_check(int socket)
     writen(socket, (unsigned char *) not_file_string, not_file_ln);
     return 1;
 }
+
+int get_time_running() {
+        fprintf (stdout, "The current epoch time / ms: %ld\n", get_time());
+        long start_time = get_time();
+        int i;
+        for (i = 0; i < 1e8; ++i);
+        fprintf (stdout, "It took %ld ms to count to 10^8.\n", \
+                        get_time() - start_time);
+        return 0;
+}
+unsigned long get_time() {
+  
+struct timeval tv1, tv2;
+
+    // get "wall clock" time at start
+    if (gettimeofday(&tv1, NULL) == -1) {
+	perror("gettimeofday error");
+	exit(EXIT_FAILURE);
+    }
+    // set CPU time at start
+    clock_t start, end;
+    if ((start = clock()) == -1) {
+	perror("clock start error");
+	exit(EXIT_FAILURE);
+    }
+    // do something CPU bound - anything really...
+    int i;
+    int j = 55;
+    for (i = 0; i < 3000000; i++) {
+	j++;
+    }
+
+    // set CPU time at end
+    if ((end = clock()) == -1) {
+	perror("clock end error");
+	exit(EXIT_FAILURE);
+    }
+
+    printf("Time on CPU = %f seconds\n",
+	   ((double) (end - start)) / CLOCKS_PER_SEC);
+
+    // get "wall clock" time at end
+    if (gettimeofday(&tv2, NULL) == -1) {
+	perror("gettimeofday error");
+	exit(EXIT_FAILURE);
+    }
+    // in microseconds...
+    printf("Total execution time = %f seconds\n",
+	   (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+	   (double) (tv2.tv_sec - tv1.tv_sec));
+
+    //exit(EXIT_SUCCESS);
+
+}
+
+unsigned long get_time_running_svr(unsigned long tv) {
+  unsigned long tv_start = get_time();
+  return tv - tv_start;
+}
+
+int getIp()
+{
+
+  char hostbuffer[256]; 
+	char *IPbuffer; 
+	struct hostent *host_entry; 
+	int hostname; 
+
+	// To retrieve hostname 
+	hostname = gethostname(hostbuffer, sizeof(hostbuffer)); 
+    if (hostname == -1) { 
+		perror("gethostname"); 
+		exit(1); 
+	}
+
+	// To retrieve host information 
+	host_entry = gethostbyname(hostbuffer); 
+    if (host_entry == NULL) { 
+		perror("gethostbyname"); 
+		exit(1); 
+	}
+
+	// To convert an Internet network 
+	// address into ASCII string 
+	IPbuffer = inet_ntoa(*((struct in_addr*) 
+						host_entry->h_addr_list[0])); 
+
+	//printf("Hostname: %s\n", hostbuffer); 
+	printf("Host IP: %s\n", IPbuffer); 
+
+	return 0; 
+}
+

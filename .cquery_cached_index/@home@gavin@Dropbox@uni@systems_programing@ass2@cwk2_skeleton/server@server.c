@@ -23,29 +23,53 @@
 #include <fcntl.h>
 #include <sys/sendfile.h>
 #include <arpa/inet.h>
-
 /* TODO:
  * 1) basic error handling
  * 2) stat ?
  * 3) ip address display
  * 7) signal interupts
+ * 4) fix server loop repeat command on interrupt
+ * 5) add comments
  */
 // thread function
 void *client_handler(void *);
 int recieve_menu_option(int);
 
-struct sockaddr_in serv_addr; 
-struct sockaddr_in client_addr;
-char fname[100] = "test.txt";
+// signal handler to be called on receipt of (in this case) SIGTERM
+void handler(int sig, siginfo_t *siginfo, void *context)
+{
+  get_time();
+  exit(1);
+}
+
+int catch_signal(int sig, void (*handler)(int))
+{
+  struct sigaction action;
+  action.sa_handler = handler;
+  sigemptyset(&action.sa_mask);
+  action.sa_flags = 0;
+  return sigaction (sig, &action, NULL);
+}
+
 
 // you shouldn't need to change main() in the server except the port number
 int main(void)
 {
-    int listenfd = 0, connfd = 0;
 
-/* struct sockaddr_in serv_addr;  */
-/* struct sockaddr_in client_addr; */
-socklen_t socksize = sizeof(struct sockaddr_in);
+  /*======================  signal handler ==================== */
+  if (catch_signal(SIGINT, &handler) == -1) {
+    fprintf(stderr, "Can't map the handler");
+    exit(2);
+  }    
+ 
+  // display ip on server
+    getIp();
+  
+    int listenfd = 0, connfd = 0;
+    
+    struct sockaddr_in serv_addr;
+    struct sockaddr_in client_addr;
+    socklen_t socksize = sizeof(struct sockaddr_in);
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
     memset(&serv_addr, '0', sizeof(serv_addr));
 
@@ -54,23 +78,23 @@ socklen_t socksize = sizeof(struct sockaddr_in);
     serv_addr.sin_port = htons(50001);
     
     //====================== IP section ===========================================
-int fd;
-  struct ifreq ifr;
+/* int fd; */
+/*   struct ifreq ifr; */
 
-  fd = socket(AF_INET, SOCK_DGRAM, 0);
+/*   fd = socket(AF_INET, SOCK_DGRAM, 0); */
 
- /* I want to get an IPv4 IP address */
- ifr.ifr_addr.sa_family = AF_INET;
+/*  /\* I want to get an IPv4 IP address *\/ */
+/*  ifr.ifr_addr.sa_family = AF_INET; */
 
- /* I want IP address attached to "eth0" */
- strncpy(ifr.ifr_name, "eth0", IFNAMSIZ-1);
+/*  /\* I want IP address attached to "eth0" *\/ */
+/*  strncpy(ifr.ifr_name, "eth0", IFNAMSIZ-1); */
 
- ioctl(fd, SIOCGIFADDR, &ifr);
+/*  ioctl(fd, SIOCGIFADDR, &ifr); */
 
- close(fd);
+/*  close(fd); */
 
- /* display result */
- printf("%s\n", inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
+/*  /\* display result *\/ */
+/*  printf("%s\n", inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr)); */
 
    //=========================END====================================================
 
@@ -100,6 +124,7 @@ int fd;
 	    perror("could not create thread");
 	    exit(EXIT_FAILURE);
 	}
+
 	//Now join the thread , so that we dont terminate before the thread
 	pthread_join( sniffer_thread , NULL);
 	printf("Handler assigned\n");
@@ -110,20 +135,36 @@ int fd;
 
     // never reached...
     // ** should include a signal handler to clean up
+   
     exit(EXIT_SUCCESS);
 
 } // end main()
 
 // thread function - one instance of each for each connected client
 // this is where the do-while loop will go
+/** This funcion runs a while loop infinately until the user either uses ctl-c
+    or selects option 7 to close the connection, achieved by checking exit codes */
 void *client_handler(void *socket_desc )
 {
     //Get the socket descriptor
     int connfd = *(int *) socket_desc;
-
-    // loop 1
-    while(recieve_menu_option(connfd) != 7);
-
+    while(1) {
+      /* if this function returns -1 it has recieved a ctrl-c (FIN signal) 
+         from client */
+      int result = recieve_menu_option(connfd);
+      if (result == -1) {
+        fprintf(stderr, "The user has closed connection\n");
+        break;
+      }
+      /* else if (result == 7) { */
+      /*   printf("The user has exited program from menu option\n"); */
+      /*   break; */
+      /* } */
+      /* else if (result == 0) { */
+      /*   printf("The user has entered non recognised data\n"); */
+      /*   break; */
+      /* } */
+    }
     
     printf("Thread %lu exiting\n", (unsigned long) pthread_self());
 
@@ -138,14 +179,11 @@ int recieve_menu_option(int socket)
 {
     char hello_string[32];
     size_t k;
-
-    readn(socket, (unsigned char *) &k, sizeof(size_t));
-    readn(socket, (unsigned char *) hello_string, k) == 0 )
+    /* readn(socket, (unsigned char *) &k, sizeof(size_t)); */
+    /* readn(socket, (unsigned char *) hello_string, k); */
      
-        
-      
-
-    printf("Option: %s selected\n", hello_string);
+    if (read(socket, hello_string, (sizeof(&k))) != 0) {
+     printf("Option: %s selected\n", hello_string);
     //printf("Received: %zu bytes\n\n", k);
     //printf("first char of arr is: %c \n", hello_string[0]);
 
@@ -185,27 +223,11 @@ int recieve_menu_option(int socket)
       return 0;
     }
       }
-    exit(EXIT_SUCCESS);
-} // end get_hello() */
+ 
+    }
+    else 
+      return -1;
+
+    } // end get_hello() */
 
 
-int getIp()
-{
-int fd;
- struct ifreq ifr;
-fd = socket(AF_INET, SOCK_DGRAM, 0);
-
- /* I want to get an IPv4 IP address */
- ifr.ifr_addr.sa_family = AF_INET;
-
-// I want IP address attached to "eth0"
- strncpy(ifr.ifr_name, "eth0", IFNAMSIZ-1);
-
- ioctl(fd, SIOCGIFADDR, &ifr);
-
-close(fd);
-
- /* display result */
- printf("%s\n", inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
-return 0;
-}

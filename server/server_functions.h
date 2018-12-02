@@ -11,3 +11,6 @@ void send_time(int socket);
 void* send_file(int *arg);
 void* send_file2(int *arg);
 int file_check(int socket);
+int get_time_running();
+unsigned long get_time();
+unsigned long get_time_running_svr(unsigned long tv);
