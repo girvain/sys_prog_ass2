@@ -14,11 +14,15 @@
 #include "rdwrn.h"
 #include <sys/utsname.h>
 
+/* Displays a string of menu options that the user can select on the client side */
 void displayOptions()
 {
   puts("\nEnter an option:\n1. Display name/ID\n2. Display array of random ints\n3. Display the uname\n4. List files\n5. Get time\n6. Download file\n7. Exit\n");
 }
 
+/* sends a string to the server for the switch menu of options on the server to handle
+ * args socket, char array
+ */
 void send_menu_option(int socket, char *hello_string)
 {
   //char hello_string[32]; 
@@ -27,6 +31,9 @@ void send_menu_option(int socket, char *hello_string)
     writen(socket, (unsigned char *) hello_string, n);	  
 }
 
+/* recieves the welecome message from the server. This is the response function 
+ * to menu option 1.
+ */ 
 void recieve_welcome_msg(int socket)
 {
     char hello_string[32];
@@ -64,20 +71,15 @@ int main(void)
     } else
        printf("Connected to server...\n");
 
-    /** Use juse the file transfer */
-    //get_file2(sockfd);
 
-
-    //your own application code will go here and replace what is below... 
-    //i.e. your menu etc. /
+    /* main loop for the client side interface. Runs a while loop and only breaks 
+     * when the user enters the option 7. 
+     */
     char user_input[124];
-    //int user_input;
     while (user_input[0] != '7')
     {
       displayOptions();
         scanf("%s", user_input);
-
-      //send_menu_option(sockfd, user_input);
 
       switch(user_input[0]) {
       case '1' :
@@ -109,15 +111,12 @@ int main(void)
         scanf("%s", fname);
         printf("This is whats in the buffer: %s\n", fname);
 
-        int condition = file_check(sockfd, fname);
-        printf("%d", condition);
-        if (condition == 0) {
+        int condition = file_check(sockfd, fname); // check file is on server
+        printf("%d", condition); // inform user about file
+        if (condition == 0) { // if it's there call get_file2
           //printf("file check exited right");
           get_file2(sockfd, &fname);
         }
-        
-        //get_file2(sockfd, &fname);
-       
         break;
       case '7' :
         send_menu_option(sockfd, "7");
@@ -125,8 +124,7 @@ int main(void)
       default:
           printf("Option not recognised\n");
       }
-      //printf("Would you like another option[Y/n]\n");
-      }// end of while
+    }// end of while
 
       
     /*** make sure sockets are cleaned up */

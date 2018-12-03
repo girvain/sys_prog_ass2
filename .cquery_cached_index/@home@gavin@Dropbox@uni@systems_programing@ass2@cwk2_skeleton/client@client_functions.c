@@ -12,6 +12,9 @@
 #include "rdwrn.h"
 #include <sys/utsname.h>
 
+/* get the option 1 send_hello funcion message from the server. User as option 1 
+ * function in the client menu.
+ */
 void get_hello(int socket)
 {
     char hello_string[256];
@@ -24,6 +27,7 @@ void get_hello(int socket)
     printf("Received: %zu bytes\n\n", k);
 } // end get_hello()
 
+/* gets an array of random numbers from the server and prints them to the console.*/
 void send_and_get_ints(int socket)  
 {
   int array[5];
@@ -49,6 +53,9 @@ void get_random_numbers()
   readn(socket, (unsigned char *) hello_string, k);
 }
 
+/* gets system about the server from the server then prints it with the appropriate
+ * labels
+ */
 void get_uts(int socket)
 {
   struct utsname uts;
@@ -74,24 +81,13 @@ void get_filenames(int socket)
     size_t k;
    
     readn(socket, (unsigned char *) &k, sizeof(size_t));
-    //char hello_string[k];
     readn(socket, (unsigned char *) hello_string, k);
 
     printf("filenames in upload directory:\n%s", hello_string);
     //printf("Received: %zu bytes\n\n", k);
+} 
 
-    // payload way, not working with extra chars in results
-/* int array[256]; */
-/*   size_t payload_length; */
-/*   size_t n = readn(socket, (unsigned char *) &payload_length, sizeof(size_t)); */
-/*   printf("payload_length is: %zu (%zu bytes)\n", payload_length, n); */
-/*   n = readn(socket, (unsigned char *) array, payload_length); */
-
-/*  printf("filenames in upload directory:\n%s", array); */
-
-
-} // end get_hello()
-
+/* gets the current time from the server */
 void get_time(int socket)
 {
   char hello_string[32];
@@ -103,7 +99,7 @@ void get_time(int socket)
     printf("%s\n", hello_string);
 }
 
-/* ============================= recieve file ============================== */
+/* ============================= recieve file functions ============================== */
 void gotoxy(int x,int y)
  {
  printf("%c[%d;%df",0x1B,y,x);
@@ -199,8 +195,7 @@ int get_file2(int sockfd, char* fname)
     printf("%i", remain_data);
         
     /* Receive data in chunks of 1024 bytes */
-        //while(((bytesReceived = read(sockfd, recvBuff, 1024)) > 0) && (remain_data > 0))
-        while(remain_data > 0)
+    while(remain_data > 0)
     {
       bytesReceived = read(sockfd, recvBuff, 1024);
       sz++;

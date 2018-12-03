@@ -26,11 +26,12 @@
 /* TODO:
  * 1) basic error handling
  * 2) stat ?
- * 3) ip address display
  * 7) signal interupts
  * 4) fix server loop repeat command on interrupt
  * 5) add comments
+ * 6) check empty upload folder
  */
+
 // thread function
 void *client_handler(void *);
 int recieve_menu_option(int);
