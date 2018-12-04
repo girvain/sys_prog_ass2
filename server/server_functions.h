@@ -14,5 +14,3 @@ int file_check(int socket);
 int get_time_running();
 unsigned long get_time();
 unsigned long get_time_running_svr(unsigned long tv);
-//void set_end_time(void* start, struct timeval tv1);
-//void set_start_time(void* start, struct timeval tv1);

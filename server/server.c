@@ -21,11 +21,6 @@
 #include <fcntl.h>
 #include <sys/sendfile.h>
 #include <arpa/inet.h>
-/* TODO:
- * 1) basic error handling
- * 4) fix server loop repeat command on interrupt
- * 5) add comments
- */
 
 // global variable to store the start time values for calculating program execution time
 struct timeval *start_time;
@@ -72,6 +67,8 @@ int set_end_time()
 	   (double) (tv2.tv_usec - start_time->tv_usec) / 1000000 +
 	   (double) (tv2.tv_sec - start_time->tv_sec));
 
+    // free the start_time global variable
+    free(start_time);
     exit(EXIT_SUCCESS);
 }
 
@@ -195,54 +192,52 @@ void *client_handler(void *socket_desc )
  */
 int recieve_menu_option(int socket)
 {
-    char hello_string[32];
+    char hello_string[32] = "";
     size_t k;
-    /* readn(socket, (unsigned char *) &k, sizeof(size_t)); */
-    /* readn(socket, (unsigned char *) hello_string, k); */
-     
+    // clear the buffer each time just to be safe
+    bzero(hello_string, strlen(hello_string));
+    // read input from client
     if (read(socket, hello_string, (sizeof(&k))) != 0) {
      printf("Option: %s selected\n", hello_string);
 
-
+     // get the first char from recieved string coz thats all i want
     char option = (char)hello_string[0];
-    if (option != NULL) {
+    if (option != NULL) { // check if option has been initialized
       
-    switch (option) {
-    case '1':
-      send_hello(socket);
-      return 1;
-    case '2':
-      get_and_send_ints(socket);
-      return 2;
-    case '3':
-      send_uts(socket);
-      return 3;
-    case '4':
-      print_file_sizes();
-      send_file_names(socket);
-      return 4;
-    case '5':
-      send_time(socket);
-      return 5;
-    case '6':
-      //file_check(socket);
-      //send_file3(socket);
-      if (file_check(socket) == 0) {
-        send_file3(socket);
-      }
-      fprintf(stderr, "error: file not on server\n");
-      return 6;
-    case '7':
-      return 7;
-    case ' ':
-      return 0;
-    default :
-      return 0;
-      //bzero(hello_string, 32);
-    } // end of switch 
-    } // end of if
+      switch (option) {
+      case '1':
+        send_hello(socket);
+        return 1;
+      case '2':
+        get_and_send_ints(socket);
+        return 2;
+      case '3':
+        send_uts(socket);
+        return 3;
+      case '4':
+        print_file_sizes();
+        send_file_names(socket);
+        return 4;
+      case '5':
+        send_time(socket);
+        return 5;
+      case '6':
+        if (file_check(socket) == 0) { // if the file is on the server call send_file3
+          send_file3(socket);
+        } else
+          fprintf(stderr, "error: file not on server\n");
+        return 6;
+      case '7':
+        return 7;
+      case ' ':
+        return 0;
+      default :
+        return 0;
+      } // end of switch 
+    } // end of inner if  {
+    
+    } // end of outer if
     else
       return -1;
-    } // end get_hello() */
-}
+} // end get_hello() */
 
