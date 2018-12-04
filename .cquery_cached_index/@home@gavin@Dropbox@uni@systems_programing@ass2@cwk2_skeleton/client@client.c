@@ -25,10 +25,10 @@ void displayOptions()
  */
 void send_menu_option(int socket, char *hello_string)
 {
-  //char hello_string[32]; 
     size_t n = strlen(hello_string) + 1;
-    writen(socket, (unsigned char *) &n, sizeof(size_t));	
-    writen(socket, (unsigned char *) hello_string, n);	  
+    /* writen(socket, (unsigned char *) &n, sizeof(size_t));	 */
+    /* writen(socket, (unsigned char *) hello_string, n);	   */
+    send(socket, hello_string, n, NULL);
 }
 
 /* recieves the welecome message from the server. This is the response function 

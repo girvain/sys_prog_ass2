@@ -23,22 +23,24 @@
 #include <arpa/inet.h>
 /* TODO:
  * 1) basic error handling
- * 7) signal interupts
  * 4) fix server loop repeat command on interrupt
  * 5) add comments
  */
 
+// global variable to store the start time values for calculating program execution time
 struct timeval *start_time;
 
 // thread function
 void *client_handler(void *);
 int recieve_menu_option(int);
 
-/* /\* set CPU time at start by passing in global variable. *\/ */
-void set_start_time()
+/* set CPU time at start by initializing the global variable on the heap. It
+ * stores the timeval struct in which the set_end_time() will need to calculate
+ * the total runtime of the server.
+*/
+int set_start_time()
 {
   struct timeval tv1;
-  clock_t start;
 
   // get "wall clock" time at start
   if (gettimeofday(&tv1, NULL) == -1) {
@@ -46,51 +48,36 @@ void set_start_time()
 	exit(EXIT_FAILURE);
   }
   
-  if ((start = clock()) == -1) {
-    perror("clock start error");
-	exit(EXIT_FAILURE);
-  }
-
-  clock_t *start_heap = (clock_t*) malloc(sizeof(start));
   start_time =  (struct timeval *)malloc(sizeof(struct timeval));
-  start_time = &tv1;
+  start_time->tv_usec= tv1.tv_usec;
+  start_time->tv_sec= tv1.tv_sec;
+  return 0;
 }
 
-void set_end_time(struct timeval *start_time)
+/* calculates the runtime in seconds of how long the server has been running.
+ * It relies on the start_time global variable being initialized by the 
+ * set_start_time().
+ */
+int set_end_time()
 {
-  struct timeval tv1 = *start_time;
   struct timeval tv2;
-
-      // set CPU time at start
-    //clock_t end;
-
-    // set CPU time at end
-    /* if ((end = clock()) == -1) { */
-    /*   perror("clock end error"); */
-    /*   exit(EXIT_FAILURE); */
-    /* } */
-
-    /* printf("Time on CPU = %f seconds\n", */
-	/*    ((double) (end - start)) / CLOCKS_PER_SEC); */
-
-    // get "wall clock" time at end
+      // get "wall clock" time at end
     if (gettimeofday(&tv2, NULL) == -1) {
-	perror("gettimeofday error");
+      perror("gettimeofday error");
 	exit(EXIT_FAILURE);
     }
 
     // in microseconds...
     printf("Total execution time = %f seconds\n",
-	   (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
-	   (double) (tv2.tv_sec - tv1.tv_sec));
+	   (double) (tv2.tv_usec - start_time->tv_usec) / 1000000 +
+	   (double) (tv2.tv_sec - start_time->tv_sec));
 
-    //exit(EXIT_SUCCESS);
+    exit(EXIT_SUCCESS);
 }
 
 // signal handler to be called on receipt of (in this case) SIGTERM
 void handler(int sig, siginfo_t *siginfo, void *context)
 {
-  //set_start_time();
   set_end_time(start_time);
   exit(1);
 }
@@ -108,20 +95,10 @@ int catch_signal(int sig, void (*handler)(int))
 // you shouldn't need to change main() in the server except the port number
 int main(void)
 {
-
-  set_start_time();
-  // test code to prove server exec works
-  
-  /* int i; */
-  /* for (i = 0; i < 1000000000; ++i) { */
-    
-  /* } */
-  /* set_end_time(start_time); */
-
-
-
-
-
+  // call this to initialize the start_time global variable
+  if (set_start_time() != 0) {
+      fprintf(stderr, "error with initializing start_time variable");
+  }
 
   /*======================  signal handler ==================== */
   if (catch_signal(SIGINT, &handler) == -1) {
@@ -131,7 +108,8 @@ int main(void)
  
   // display ip on server
     getIp();
-  
+    
+  /*====================== Socket Code ==================== */
     int listenfd = 0, connfd = 0;
     
     struct sockaddr_in serv_addr;
@@ -153,7 +131,6 @@ int main(void)
     }
     // end socket setup
 
-    
     //Accept and incoming connection
     puts("Waiting for incoming connections...");
     while (1) {
@@ -186,6 +163,7 @@ int main(void)
 
 // thread function - one instance of each for each connected client
 // this is where the do-while loop will go
+
 /** This funcion runs a while loop infinately until the user either uses ctl-c
     or selects option 7 to close the connection, achieved by checking exit codes */
 void *client_handler(void *socket_desc )
@@ -211,6 +189,10 @@ void *client_handler(void *socket_desc )
     return 0;
 }  // end client_handler()
 
+/* function to be used in main loop to recieve user input from the client 
+ * and call the corrisponding function based on a matching option selected 
+ * in the switch statement.
+ */
 int recieve_menu_option(int socket)
 {
     char hello_string[32];
@@ -220,8 +202,7 @@ int recieve_menu_option(int socket)
      
     if (read(socket, hello_string, (sizeof(&k))) != 0) {
      printf("Option: %s selected\n", hello_string);
-    //printf("Received: %zu bytes\n\n", k);
-    //printf("first char of arr is: %c \n", hello_string[0]);
+
 
     char option = (char)hello_string[0];
     if (option != NULL) {
@@ -257,12 +238,11 @@ int recieve_menu_option(int socket)
       return 0;
     default :
       return 0;
-    }
-      }
- 
-    }
-    else 
+      //bzero(hello_string, 32);
+    } // end of switch 
+    } // end of if
+    else
       return -1;
-} // end get_hello() */
-
+    } // end get_hello() */
+}
 

@@ -57,12 +57,13 @@ void send_hello(int socket)
     char hello_string_full[250];
     char hello_string[] = "hello SP Gavin Ross S1821951 from IP: ";
 
-    //cat IP to the full string
+    //cat IPbuffer to the full string
     strcat(hello_string, IPbuffer);
-
+    
     size_t n = strlen(hello_string) + 1;
     writen(socket, (unsigned char *) &n, sizeof(size_t));
     writen(socket, (unsigned char *) hello_string, n);
+
 
 } // end send_hello()
 
@@ -283,7 +284,7 @@ void* send_file(int *arg)
 {
   //int connfd = (int)arg;
   int connfd = (int*)arg;
-  char fname[] = "text.txt";
+  char fname[] = "";
   printf("Connection accepted and id: %d\n",connfd);
       //printf("Connected to Clent: %s:%d\n",inet_ntoa(serv_addr.sin_addr),ntohs(serv_addr.sin_port));
   //write(connfd, fname,256);
@@ -383,13 +384,13 @@ void* send_file2(int *arg)
         //shutdown(connfd,SHUT_WR);
         //        sleep(2);
 }
-void send_file3(int arg)
+
+int send_file3(int arg)
 {
   //char fname[] = "text.txt";
       int connfd=arg;
       printf("Connection accepted and id: %d\n",connfd);
       //write(connfd, fname,256);
-
 
     /* Get file name and Create file where data will be stored */
     char fname[256];
@@ -409,9 +410,6 @@ void send_file3(int arg)
         }   
         
 
-
-
-
         /* // code to send filesize */
         struct stat *buf;
         buf = malloc(sizeof(struct stat));
@@ -428,21 +426,6 @@ void send_file3(int arg)
         
         writen(connfd, (unsigned char *) &payload_length, sizeof(size_t));
         writen(connfd, (unsigned char *) convert_int, payload_length);
-
-
-        /* int len = writen(connfd, size, sizeof(size)); */
-        /* if (len < 0) */
-        /* { */
-        /*       fprintf(stderr, "Error on sending greetings --> %s", strerror(errno)); */
-
-        /*       exit(EXIT_FAILURE); */
-        /* } */
-
-        /* fprintf(stdout, "Server sent %d bytes for the size\n", len); */
-        // end of trial
-
-
-
 
         
         /* Read data from file and send it*/
@@ -475,6 +458,7 @@ void send_file3(int arg)
         //close(connfd); 
         //shutdown(connfd,SHUT_WR);
         //        sleep(2);
+        return 0;
 }
 
 
@@ -495,8 +479,6 @@ int file_check(int socket)
     readn(socket, (unsigned char *) &k, sizeof(size_t));	
     readn(socket, (unsigned char *) fname, k);
 
-   
-    
     n = scandir("upload", &namelist, NULL, alphasort);
     if (n < 0)
         perror("scandir");
@@ -534,106 +516,6 @@ int file_check(int socket)
     writen(socket, (unsigned char *) not_file_string, not_file_ln);
     return 1;
 }
-
-int get_time_running() {
-        fprintf (stdout, "The current epoch time / ms: %ld\n", get_time());
-        long start_time = get_time();
-        int i;
-        for (i = 0; i < 1e8; ++i);
-        fprintf (stdout, "It took %ld ms to count to 10^8.\n", \
-                        get_time() - start_time);
-        return 0;
-}
-
-unsigned long get_time()
-{
-  
-struct timeval tv1, tv2;
-
-    // get "wall clock" time at start
-    if (gettimeofday(&tv1, NULL) == -1) {
-	perror("gettimeofday error");
-	exit(EXIT_FAILURE);
-    }
-    // set CPU time at start
-    clock_t start, end;
-    if ((start = clock()) == -1) {
-	perror("clock start error");
-	exit(EXIT_FAILURE);
-    }
-    // do something CPU bound - anything really...
-    int i;
-    int j = 55;
-    for (i = 0; i < 3000000; i++) {
-	j++;
-    }
-
-    // set CPU time at end
-    if ((end = clock()) == -1) {
-	perror("clock end error");
-	exit(EXIT_FAILURE);
-    }
-
-    printf("Time on CPU = %f seconds\n",
-	   ((double) (end - start)) / CLOCKS_PER_SEC);
-
-    // get "wall clock" time at end
-    if (gettimeofday(&tv2, NULL) == -1) {
-	perror("gettimeofday error");
-	exit(EXIT_FAILURE);
-    }
-    // in microseconds...
-    printf("Total execution time = %f seconds\n",
-	   (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
-	   (double) (tv2.tv_sec - tv1.tv_sec));
-
-    //exit(EXIT_SUCCESS);
-
-}
-
-/* /\* set CPU time at start by passing in global variable. *\/ */
-/* void set_start_time(clock_t start, struct timeval tv1) */
-/* { */
-/*   // get "wall clock" time at start */
-/*     if (gettimeofday(&tv1, NULL) == -1) { */
-/*       perror("gettimeofday error"); */
-/* 	exit(EXIT_FAILURE); */
-/*     } */
-
-/*     if ((start = clock()) == -1) { */
-/*       perror("clock start error"); */
-/* 	exit(EXIT_FAILURE); */
-/*     } */
-/* } */
-
-/* void set_end_time(clock_t start, struct timeval tv1) */
-/* { */
-/*     struct timeval tv2; */
-/*       // set CPU time at start */
-/*     clock_t end; */
-
-/*     // set CPU time at end */
-/*     if ((end = clock()) == -1) { */
-/*       perror("clock end error"); */
-/*       exit(EXIT_FAILURE); */
-/*     } */
-
-/*     printf("Time on CPU = %f seconds\n", */
-/* 	   ((double) (end - start)) / CLOCKS_PER_SEC); */
-
-/*     // get "wall clock" time at end */
-/*     if (gettimeofday(&tv2, NULL) == -1) { */
-/* 	perror("gettimeofday error"); */
-/* 	exit(EXIT_FAILURE); */
-/*     } */
-
-/*     // in microseconds... */
-/*     printf("Total execution time = %f seconds\n", */
-/* 	   (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 + */
-/* 	   (double) (tv2.tv_sec - tv1.tv_sec)); */
-
-/*     //exit(EXIT_SUCCESS); */
-/* } */
 
 
 int getIp()
