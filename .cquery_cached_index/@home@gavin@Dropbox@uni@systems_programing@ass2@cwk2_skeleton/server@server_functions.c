@@ -116,9 +116,14 @@ void send_uts(int socket)
 void stat_file(char *file)
 {
 
+  char file_path[50];
+  file_path[0] = '\0';
+  strcat(file_path, "./upload/");
+  strcat(file_path, file);
+  
     struct stat sb;
 
-    if (stat(file, &sb) == -1) {
+    if (stat(file_path, &sb) == -1) {
       perror("stat");
       //exit(EXIT_FAILURE);
       printf("error: stat failed\n");
@@ -153,23 +158,23 @@ void stat_file(char *file)
 	break;
     }
 
-    printf("I-node number:            %ld\n", (long) sb.st_ino);
+    //printf("I-node number:            %ld\n", (long) sb.st_ino);
 
-    printf("Mode:                     %lo (octal)\n",
-	   (unsigned long) sb.st_mode);
+    /* printf("Mode:                     %lo (octal)\n", */
+	/*    (unsigned long) sb.st_mode); */
 
-    printf("Link count:               %ld\n", (long) sb.st_nlink);
-    printf("Ownership:                UID=%ld   GID=%ld\n",
-	   (long) sb.st_uid, (long) sb.st_gid);
+    /* printf("Link count:               %ld\n", (long) sb.st_nlink); */
+    /* printf("Ownership:                UID=%ld   GID=%ld\n", */
+	/*    (long) sb.st_uid, (long) sb.st_gid); */
 
-    printf("Preferred I/O block size: %ld bytes\n", (long) sb.st_blksize);
+    /* printf("Preferred I/O block size: %ld bytes\n", (long) sb.st_blksize); */
     printf("File size:                %lld bytes\n",
 	   (long long) sb.st_size);
-    printf("Blocks allocated:         %lld\n", (long long) sb.st_blocks);
+    /* printf("Blocks allocated:         %lld\n", (long long) sb.st_blocks); */
 
-    printf("Last status change:       %s", ctime(&sb.st_ctime));
-    printf("Last file access:         %s", ctime(&sb.st_atime));
-    printf("Last file modification:   %s", ctime(&sb.st_mtime));
+    /* printf("Last status change:       %s", ctime(&sb.st_ctime)); */
+    /* printf("Last file access:         %s", ctime(&sb.st_atime)); */
+    /* printf("Last file modification:   %s", ctime(&sb.st_mtime)); */
 
     printf("\n");
 }
@@ -177,15 +182,15 @@ void stat_file(char *file)
 
 int print_file_sizes()
 {
-  printf("This is all the files with info in the uploads folder");
+  printf("\nThis is all the files with info in the uploads folder\n");
     struct dirent **namelist;
     int n;
     
-    if ((n = scandir("./upload", &namelist, NULL, alphasort)) == -1)
+    if ((n = scandir("./upload/", &namelist, NULL, alphasort)) == -1)
 	perror("scandir");
     else {
 	while (n--) {
-	    printf("File name:		  %s\n", namelist[n]->d_name);
+	    printf("\nFile name:		  %s\n", namelist[n]->d_name);
 	    stat_file(namelist[n]->d_name);
 	    free(namelist[n]);	//NB
 	}
@@ -223,7 +228,7 @@ void send_file_names(int socket)
         perror("scandir");
     else {
       while (n--) {
-        printf("%s\n", namelist[n]->d_name); // print the name of the file
+        //printf("%s\n", namelist[n]->d_name); // print the name of the file
          strcat(filelist, namelist[n]->d_name);
          strcat(filelist, "\n");
         free(namelist[n]);
@@ -233,7 +238,7 @@ void send_file_names(int socket)
 
     strcat(filelist, "\0"); // add this to end the stirng
     //printf("char count = %d\n", char_count);
-    printf("%s\n", filelist);
+    //printf("%s\n", filelist);
 
 
     // send the string
@@ -539,7 +544,9 @@ int get_time_running() {
                         get_time() - start_time);
         return 0;
 }
-unsigned long get_time() {
+
+unsigned long get_time()
+{
   
 struct timeval tv1, tv2;
 
@@ -584,10 +591,50 @@ struct timeval tv1, tv2;
 
 }
 
-unsigned long get_time_running_svr(unsigned long tv) {
-  unsigned long tv_start = get_time();
-  return tv - tv_start;
-}
+/* /\* set CPU time at start by passing in global variable. *\/ */
+/* void set_start_time(clock_t start, struct timeval tv1) */
+/* { */
+/*   // get "wall clock" time at start */
+/*     if (gettimeofday(&tv1, NULL) == -1) { */
+/*       perror("gettimeofday error"); */
+/* 	exit(EXIT_FAILURE); */
+/*     } */
+
+/*     if ((start = clock()) == -1) { */
+/*       perror("clock start error"); */
+/* 	exit(EXIT_FAILURE); */
+/*     } */
+/* } */
+
+/* void set_end_time(clock_t start, struct timeval tv1) */
+/* { */
+/*     struct timeval tv2; */
+/*       // set CPU time at start */
+/*     clock_t end; */
+
+/*     // set CPU time at end */
+/*     if ((end = clock()) == -1) { */
+/*       perror("clock end error"); */
+/*       exit(EXIT_FAILURE); */
+/*     } */
+
+/*     printf("Time on CPU = %f seconds\n", */
+/* 	   ((double) (end - start)) / CLOCKS_PER_SEC); */
+
+/*     // get "wall clock" time at end */
+/*     if (gettimeofday(&tv2, NULL) == -1) { */
+/* 	perror("gettimeofday error"); */
+/* 	exit(EXIT_FAILURE); */
+/*     } */
+
+/*     // in microseconds... */
+/*     printf("Total execution time = %f seconds\n", */
+/* 	   (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 + */
+/* 	   (double) (tv2.tv_sec - tv1.tv_sec)); */
+
+/*     //exit(EXIT_SUCCESS); */
+/* } */
+
 
 int getIp()
 {

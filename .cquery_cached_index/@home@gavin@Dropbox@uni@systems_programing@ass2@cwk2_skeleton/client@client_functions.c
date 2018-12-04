@@ -100,83 +100,33 @@ void get_time(int socket)
 }
 
 /* ============================= recieve file functions ============================== */
+/* function to print and format file/server information */
 void gotoxy(int x,int y)
  {
  printf("%c[%d;%df",0x1B,y,x);
  }
 
-void get_file(void *sockfd)
-{
-
-  int connfd = (int*)sockfd;
-  system("clear");
-  //int sockfd = 0;
-    int bytesReceived = 0;
-    char recvBuff[256];
-    memset(recvBuff, '0', sizeof(recvBuff));
-
- /* Create file where data will be stored */
-  FILE *fp;
-  char fname[100] = "text.txt";
-  //read(sockfd, fname, 256);
-    //strcat(fname,"AK");
-    printf("File Name: %s\n",fname);
-    printf("Receiving file...");
-   	 fp = fopen(fname, "ab+");
-    	if(NULL == fp)
-    	{
-       	 printf("Error opening file");
-         return 1;
-    	}
-    long double sz=1;
-    /* Receive data in chunks of 256 bytes */
-    
-    while((bytesReceived = read(connfd, recvBuff, 256)) > 0)
-    {
-        sz++;
-        gotoxy(0,4);
-        printf("Received: %llf Mb\n",(sz/256));
-        fflush(stdout);
-        // recvBuff[n] = 0;
-        fwrite(recvBuff, sizeof(char),sizeof(recvBuff),fp);
-        printf("%s \n", recvBuff);
-    }
-
-    if(bytesReceived < 0)
-    {
-        printf("\n Read Error \n");
-    }
-    printf("\nFile OK....Completed\n");
-    //close(connfd);
-    return 0;
-}
-
-
-
+/* get a file from the server. recieves data in chunks of 1024 bytes. The server sends
+ * the file size over and the loop appends the data from the file in these chunks until
+ * and subtracts the file size until it is empty.
+ */
 int get_file2(int sockfd, char* fname)
 {
-  //system("clear");
+  //system("clear"); // clear the user window
     int bytesReceived = 0;
     char recvBuff[1024];
     memset(recvBuff, '0', sizeof(recvBuff));
 
-    // send the name of file you want to the server
-    /* char fname[256]; */
-    /*   printf("Enter the file name you want \n"); */
-    /*   scanf("%s", fname); */
-
-      
-      
-      size_t payload_length_fname = sizeof(fname);
-      writen(sockfd, (unsigned char *) &payload_length_fname, sizeof(size_t));
-      writen(sockfd, (unsigned char *) fname, payload_length_fname);
+    size_t payload_length_fname = sizeof(fname);
+    writen(sockfd, (unsigned char *) &payload_length_fname, sizeof(size_t));
+    writen(sockfd, (unsigned char *) fname, payload_length_fname);
 
 
       /* Create the file on the client side */ 
     FILE *fp;
 	printf("File Name: %s\n",fname);
 	printf("Receiving file...");
-   	 fp = fopen(fname, "ab"); 
+    fp = fopen(fname, "ab"); // open file
     	if(NULL == fp)
     	{
        	 printf("Error opening file");
@@ -184,7 +134,7 @@ int get_file2(int sockfd, char* fname)
     	}
     long double sz=1;
     
-    // get the size of the file about to be sent 
+    // get the size of the file about to be sent, read funcions are same as prev functions
     int file_size;
     size_t payload_length;
     size_t n = readn(sockfd, (unsigned char *) &payload_length, sizeof(size_t));
@@ -202,14 +152,13 @@ int get_file2(int sockfd, char* fname)
       gotoxy(0,4);
       printf("Received: %llf Mb",(sz/1024));
       fflush(stdout);
-      // recvBuff[n] = 0;
       fwrite(recvBuff, 1,bytesReceived,fp);
       printf("%s \n", recvBuff);
       printf("%i\n", bytesReceived);
       remain_data -= bytesReceived;
       bzero(recvBuff, 1024); // Clear the leftover stuff in the buffer 
     }
-
+    // check for function errors
     if(bytesReceived < 0)
     {
         printf("\n Read Error \n");
@@ -218,7 +167,10 @@ int get_file2(int sockfd, char* fname)
     //close(sockfd);
 }
 
-
+/* checks that the file is on the server by sending a char array of user input
+ * for the server funciton to seach for. Outputs a message to conosle if the file
+ * is not there, otherwise it will return 0;
+ */
 int file_check(int socket, char fname[])
 {
   size_t payload_length_fname = sizeof(fname);
@@ -238,5 +190,4 @@ int file_check(int socket, char fname[])
   }
   printf(is_file);
   return 1;
-  
 }

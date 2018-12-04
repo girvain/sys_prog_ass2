@@ -73,14 +73,21 @@ int main(void)
 
 
     /* main loop for the client side interface. Runs a while loop and only breaks 
-     * when the user enters the option 7. 
+     * when the user enters the option 7. additional if statement is added to ensure
+     * the user can not enter an option more than one char.
      */
     char user_input[124];
     while (user_input[0] != '7')
     {
       displayOptions();
-        scanf("%s", user_input);
+      scanf("%s", user_input);
 
+      // check user input for anything more than 1 char
+      if (strlen(user_input) > 1) {
+        printf("Input option not on menu\n");
+      }
+      else {
+        
       switch(user_input[0]) {
       case '1' :
        send_menu_option(sockfd, "1");
@@ -124,6 +131,8 @@ int main(void)
       default:
           printf("Option not recognised\n");
       }
+
+      }// end of else
     }// end of while
 
       

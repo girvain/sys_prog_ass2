@@ -15,34 +15,86 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <signal.h>
-// includes for getIp
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <time.h>
-// includes for stat etc
 #include <fcntl.h>
 #include <sys/sendfile.h>
 #include <arpa/inet.h>
 /* TODO:
  * 1) basic error handling
- * 2) stat ?
  * 7) signal interupts
  * 4) fix server loop repeat command on interrupt
  * 5) add comments
- * 6) check empty upload folder
  */
+
+struct timeval *start_time;
 
 // thread function
 void *client_handler(void *);
 int recieve_menu_option(int);
 
+/* /\* set CPU time at start by passing in global variable. *\/ */
+void set_start_time()
+{
+  struct timeval tv1;
+  clock_t start;
+
+  // get "wall clock" time at start
+  if (gettimeofday(&tv1, NULL) == -1) {
+    perror("gettimeofday error");
+	exit(EXIT_FAILURE);
+  }
+  
+  if ((start = clock()) == -1) {
+    perror("clock start error");
+	exit(EXIT_FAILURE);
+  }
+
+  clock_t *start_heap = (clock_t*) malloc(sizeof(start));
+  start_time =  (struct timeval *)malloc(sizeof(struct timeval));
+  start_time = &tv1;
+}
+
+void set_end_time(struct timeval *start_time)
+{
+  struct timeval tv1 = *start_time;
+  struct timeval tv2;
+
+      // set CPU time at start
+    //clock_t end;
+
+    // set CPU time at end
+    /* if ((end = clock()) == -1) { */
+    /*   perror("clock end error"); */
+    /*   exit(EXIT_FAILURE); */
+    /* } */
+
+    /* printf("Time on CPU = %f seconds\n", */
+	/*    ((double) (end - start)) / CLOCKS_PER_SEC); */
+
+    // get "wall clock" time at end
+    if (gettimeofday(&tv2, NULL) == -1) {
+	perror("gettimeofday error");
+	exit(EXIT_FAILURE);
+    }
+
+    // in microseconds...
+    printf("Total execution time = %f seconds\n",
+	   (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+	   (double) (tv2.tv_sec - tv1.tv_sec));
+
+    //exit(EXIT_SUCCESS);
+}
+
 // signal handler to be called on receipt of (in this case) SIGTERM
 void handler(int sig, siginfo_t *siginfo, void *context)
 {
-  get_time();
+  //set_start_time();
+  set_end_time(start_time);
   exit(1);
 }
-
+/* function to simplify the setting up of a signal handler */
 int catch_signal(int sig, void (*handler)(int))
 {
   struct sigaction action;
@@ -56,6 +108,20 @@ int catch_signal(int sig, void (*handler)(int))
 // you shouldn't need to change main() in the server except the port number
 int main(void)
 {
+
+  set_start_time();
+  // test code to prove server exec works
+  
+  /* int i; */
+  /* for (i = 0; i < 1000000000; ++i) { */
+    
+  /* } */
+  /* set_end_time(start_time); */
+
+
+
+
+
 
   /*======================  signal handler ==================== */
   if (catch_signal(SIGINT, &handler) == -1) {
@@ -109,8 +175,6 @@ int main(void)
 	pthread_join( sniffer_thread , NULL);
 	printf("Handler assigned\n");
 
-    //send_file3(connfd);
-
     } // end of while 
 
     // never reached...
@@ -136,14 +200,6 @@ void *client_handler(void *socket_desc )
         fprintf(stderr, "The user has closed connection\n");
         break;
       }
-      /* else if (result == 7) { */
-      /*   printf("The user has exited program from menu option\n"); */
-      /*   break; */
-      /* } */
-      /* else if (result == 0) { */
-      /*   printf("The user has entered non recognised data\n"); */
-      /*   break; */
-      /* } */
     }
     
     printf("Thread %lu exiting\n", (unsigned long) pthread_self());
@@ -207,7 +263,6 @@ int recieve_menu_option(int socket)
     }
     else 
       return -1;
-
-    } // end get_hello() */
+} // end get_hello() */
 
 
