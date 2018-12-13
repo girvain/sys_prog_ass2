@@ -120,7 +120,7 @@ int main(void)
 
   serv_addr.sin_family = AF_INET;
   serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-  serv_addr.sin_port = htons(50001);
+  serv_addr.sin_port = htons(50031);
 
   bind(listenfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
 
@@ -150,8 +150,8 @@ int main(void)
     }
 
     //Now join the thread , so that we dont terminate before the thread
-    pthread_join(sniffer_thread, NULL);
-    printf("Handler assigned\n");
+    /* pthread_join(sniffer_thread, NULL); */
+    /* printf("Handler assigned\n"); */
 
   } // end of while
 

@@ -61,7 +61,7 @@ int main(void)
   serv_addr.sin_family = AF_INET;
 
   // IP address and port of server we want to connect to
-  serv_addr.sin_port = htons(50001);
+  serv_addr.sin_port = htons(50031);
   serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
   // try to connect...
@@ -120,10 +120,10 @@ int main(void)
         bzero(fname, 256); // clear the buffer
         printf("Enter the file name you want \n");
         scanf("%s", fname);
-        printf("This is whats in the buffer: %s\n", fname);
+        //printf("This is whats in the buffer: %s\n", fname);
 
         int condition = file_check(sockfd, fname); // check file is on server
-        printf("%d", condition);                   // inform user about file
+        //printf("%d", condition);       // inform user about file, (not needed)
         if (condition == 0)
         { // if it's there call get_file2
           //printf("file check exited right");

@@ -113,7 +113,7 @@ int get_file2(int sockfd, char *fname)
 {
   //system("clear"); // clear the user window
   int bytesReceived = 0;
-  char recvBuff[1024];
+  char recvBuff[1024] = "";
   memset(recvBuff, '0', sizeof(recvBuff));
 
   size_t payload_length_fname = sizeof(fname);
@@ -123,7 +123,7 @@ int get_file2(int sockfd, char *fname)
   /* Create the file on the client side */
   FILE *fp;
   printf("File Name: %s\n", fname);
-  printf("Receiving file...");
+  //printf("Receiving file...\n");
   fp = fopen(fname, "ab"); // open file
   if (NULL == fp)
   {
@@ -140,19 +140,19 @@ int get_file2(int sockfd, char *fname)
   file_size = atoi(recvBuff); // convert buffer data to int
   printf("file size is %i\n", file_size);
   int remain_data = file_size; // set this to the full size of the file
-  printf("%i", remain_data);
+  //printf("%i\n", remain_data);
 
   /* Receive data in chunks of 1024 bytes */
   while (remain_data > 0)
   {
     bytesReceived = read(sockfd, recvBuff, 1024);
     sz++;
-    gotoxy(0, 4);
-    printf("Received: %llf Mb", (sz / 1024));
-    fflush(stdout);
+    //gotoxy(0, 4);
+    //printf("Received: %llf Mb\n", (sz / 1024));
+    //fflush(stdout);
     fwrite(recvBuff, 1, bytesReceived, fp);
-    printf("%s \n", recvBuff);
-    printf("%i\n", bytesReceived);
+    //printf("%s \n", recvBuff);
+    printf("bytes recieved %i\n", bytesReceived);
     remain_data -= bytesReceived;
     bzero(recvBuff, 1024); // Clear the leftover stuff in the buffer
   }
@@ -175,7 +175,7 @@ int file_check(int socket, char fname[])
   writen(socket, (unsigned char *)&payload_length_fname, sizeof(size_t));
   writen(socket, (unsigned char *)fname, payload_length_fname);
 
-  char is_file[256];
+  char is_file[256] = "";
   size_t k;
   readn(socket, (unsigned char *)&k, sizeof(size_t));
   readn(socket, (unsigned char *)is_file, k);
@@ -184,7 +184,7 @@ int file_check(int socket, char fname[])
 
   if (strcmp(is_file, "File present\n") == 0)
   {
-    printf(is_file);
+    printf("%s", is_file);
     return 0;
   }
   printf(is_file);
