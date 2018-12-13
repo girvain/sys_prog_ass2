@@ -234,8 +234,9 @@ void send_file_names(int socket)
 
   // scan all the files in the uplaod directory
   n = scandir("upload", &namelist, file_filter, alphasort);
-  if (n < 0)
+  if (n < 0) {
     perror("scandir");
+  }
   else
   {
     while (n--)
@@ -247,6 +248,9 @@ void send_file_names(int socket)
     free(namelist);
   }
 
+  if (strlen(filelist) < 1) {
+    strcat(filelist, "\nThe upload directory is empty\n");
+  }
   strcat(filelist, "\0"); // add this to end the stirng
 
   // send the string
