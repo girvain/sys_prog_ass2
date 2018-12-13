@@ -190,6 +190,19 @@ int print_file_sizes()
   return 0;
 }
 
+/* function to be used the the standard scandir function. This will exclude files
+ * that begin with a '.' so this will not display hidden files and the current and
+ * previous directories that are '.' and '..'
+ */
+int file_filter(const struct dirent *dir)
+{
+  if (dir->d_name[0] != '.') {
+    return 1;
+  }
+  else
+    return 0;
+}
+
 /* a function to send all the file names appending in one char array with a 
  * \n as a seperator.
  */
@@ -207,7 +220,7 @@ void send_file_names(int socket)
 
   /** get the length of each filename in the directory to make an array */
   int char_count = 0; // this is to hold the length of how long the filelist[] will be
-  int current_file = scandir("upload", &namelist, NULL, alphasort);
+  int current_file = scandir("upload", &namelist, file_filter, alphasort);
   // counts the length of the filelist string
   while (current_file--)
   {
@@ -220,7 +233,7 @@ void send_file_names(int socket)
   char filelist[500] = "";
 
   // scan all the files in the uplaod directory
-  n = scandir("upload", &namelist, NULL, alphasort);
+  n = scandir("upload", &namelist, file_filter, alphasort);
   if (n < 0)
     perror("scandir");
   else
