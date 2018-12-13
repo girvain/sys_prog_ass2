@@ -195,6 +195,12 @@ int print_file_sizes()
  */
 void send_file_names(int socket)
 {
+  /* check if the upload dir is there, if not then create it */
+  struct stat st = {0};
+  if (stat("./upload", &st) == -1) {
+    mkdir("./upload", 0700);
+  }
+
   struct dirent **namelist;
   int status;
   int n;
